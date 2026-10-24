@@ -87,6 +87,24 @@ def initialize_database():
 
             CREATE INDEX IF NOT EXISTS idx_transactions_account
             ON transactions(account_id);
+
+            -- Presupuesto mensual por categoría de gasto.
+            -- 'month' usa el formato 'AAAA-MM' (por ejemplo, '2026-10').
+            -- UNIQUE evita tener dos presupuestos para la misma
+            -- categoría en el mismo mes.
+            CREATE TABLE IF NOT EXISTS budgets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                category TEXT NOT NULL,
+                month TEXT NOT NULL
+                    CHECK (
+                        month GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]'
+                        AND substr(month, 6, 2) BETWEEN '01' AND '12'
+                    ),
+                amount REAL NOT NULL CHECK (amount > 0),
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+                UNIQUE (category, month)
+            );
             """
         )
 

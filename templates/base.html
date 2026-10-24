@@ -15,6 +15,7 @@
 <body>
     {# Sección activa de la barra lateral: las páginas de edición cuentan como su sección #}
     {% set in_transactions = request.endpoint in ('transactions', 'edit_transaction') %}
+    {% set in_budgets = request.endpoint == 'budgets' %}
     {% set in_accounts = request.endpoint in ('accounts', 'edit_account') %}
 
     <div class="app-shell">
@@ -48,14 +49,12 @@
                 </a>
 
                 <a
-                    href="#"
-                    class="nav-link"
-                    aria-disabled="true"
-                    title="Esta sección estará disponible próximamente"
+                    href="{{ url_for('budgets') }}"
+                    class="nav-link {% if in_budgets %}active{% endif %}"
+                    {% if in_budgets %}aria-current="page"{% endif %}
                 >
                     <span class="nav-icon" aria-hidden="true">◫</span>
                     <span>Presupuestos</span>
-                    <span class="nav-soon">Pronto</span>
                 </a>
 
                 <a
@@ -88,6 +87,8 @@
                     <span class="breadcrumb-current">
                         {% if in_transactions %}
                             Movimientos
+                        {% elif in_budgets %}
+                            Presupuestos
                         {% elif in_accounts %}
                             Cuentas
                         {% else %}
