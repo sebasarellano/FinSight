@@ -1,4 +1,5 @@
 import math
+import re
 from datetime import date
 
 from flask import Flask, flash, redirect, render_template, request, url_for
@@ -24,9 +25,23 @@ CATEGORIES = [
     "Otros",
 ]
 
+# Categorías que representan ingresos: no tienen presupuesto de gasto.
+INCOME_CATEGORIES = ("Salario", "Ventas")
+
+# Categorías que se pueden presupuestar (las de gasto).
+EXPENSE_CATEGORIES = [
+    category for category in CATEGORIES
+    if category not in INCOME_CATEGORIES
+]
+
 MONTHS_ES = [
     "ene", "feb", "mar", "abr", "may", "jun",
     "jul", "ago", "sep", "oct", "nov", "dic",
+]
+
+MONTH_NAMES_ES = [
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
 ]
 
 # Cómo se presenta cada tipo de cuenta en el dashboard:
@@ -48,6 +63,9 @@ ACCOUNT_TYPE_LABELS = {
 
 # Tope razonable para un saldo inicial (en valor absoluto).
 MAX_INITIAL_BALANCE = 1_000_000_000
+
+# Tope razonable para el límite de un presupuesto mensual.
+MAX_BUDGET_AMOUNT = 1_000_000
 
 
 # ---------------------------------------------------------------
@@ -75,6 +93,13 @@ def format_short_date(value):
     """Convierte '2026-10-24' en '24 oct 2026'."""
     parsed = date.fromisoformat(value)
     return f"{parsed.day} {MONTHS_ES[parsed.month - 1]} {parsed.year}"
+
+
+@app.template_filter("month_label")
+def format_month_label(value):
+    """Convierte '2026-10' en 'octubre 2026'."""
+    year, month = value.split("-")
+    return f"{MONTH_NAMES_ES[int(month) - 1]} {year}"
 
 
 # ---------------------------------------------------------------
@@ -206,6 +231,26 @@ def get_account(account_id):
         if account["id"] == account_id:
             return account
     return None
+
+
+def get_budgets(month_key):
+    """Obtiene los presupuestos de un mes (formato 'AAAA-MM')."""
+    connection = get_db_connection()
+
+    try:
+        rows = connection.execute(
+            """
+            SELECT id, category, month, amount
+            FROM budgets
+            WHERE month = ?
+            ORDER BY category
+            """,
+            (month_key,),
+        ).fetchall()
+    finally:
+        connection.close()
+
+    return [dict(row) for row in rows]
 
 
 def get_month_summary(month_key):
@@ -435,6 +480,46 @@ def parse_account_form(form):
         "name": name,
         "account_type": account_type,
         "initial_balance": round(initial_balance, 2),
+    }
+    return values, None
+
+
+def is_valid_month(value):
+    """Indica si el texto tiene el formato 'AAAA-MM' con un mes real."""
+    return re.fullmatch(r"\d{4}-(0[1-9]|1[0-2])", value) is not None
+
+
+def parse_budget_form(form):
+    """Valida los datos del formulario de un presupuesto.
+
+    Devuelve (valores, error), igual que parse_transaction_form.
+    Solo se pueden presupuestar categorías de gasto.
+    """
+    category = form.get("category", "").strip()
+    month = form.get("month", "").strip()
+    amount_text = form.get("amount", "").strip()
+
+    if category not in EXPENSE_CATEGORIES:
+        return None, "Selecciona una categoría de gasto válida."
+
+    if not is_valid_month(month):
+        return None, "Selecciona un mes válido."
+
+    try:
+        amount = float(amount_text)
+    except ValueError:
+        amount = 0
+
+    if not math.isfinite(amount) or amount <= 0 or amount > MAX_BUDGET_AMOUNT:
+        return None, (
+            "El límite debe ser un número mayor que cero "
+            "y no superar 1.000.000."
+        )
+
+    values = {
+        "category": category,
+        "month": month,
+        "amount": round(amount, 2),
     }
     return values, None
 
@@ -748,6 +833,63 @@ def delete_transaction(transaction_id):
         flash("El movimiento ya no existe.", "error")
 
     return redirect(url_for("transactions"))
+
+
+@app.route("/budgets", methods=["GET", "POST"])
+def budgets():
+    """Muestra y guarda los presupuestos mensuales por categoría."""
+    if request.method == "POST":
+        values, error = parse_budget_form(request.form)
+
+        if error:
+            flash(error, "error")
+            return redirect(url_for("budgets"))
+
+        connection = get_db_connection()
+
+        try:
+            # Si ya existe un presupuesto para esa categoría y mes
+            # (restricción UNIQUE), se actualiza el importe en lugar
+            # de dar error.
+            connection.execute(
+                """
+                INSERT INTO budgets (category, month, amount)
+                VALUES (:category, :month, :amount)
+                ON CONFLICT (category, month)
+                DO UPDATE SET amount = excluded.amount
+                """,
+                values,
+            )
+            connection.commit()
+
+        except Exception:
+            connection.rollback()
+            app.logger.exception("No se pudo guardar el presupuesto")
+            flash(
+                "No se pudo guardar el presupuesto. Inténtalo de nuevo.",
+                "error",
+            )
+            return redirect(url_for("budgets"))
+
+        finally:
+            connection.close()
+
+        flash("Presupuesto guardado correctamente.", "success")
+        return redirect(url_for("budgets", month=values["month"]))
+
+    # Mes que se está consultando: el de la dirección (?month=AAAA-MM)
+    # si es válido; si no, el mes actual.
+    selected_month = request.args.get("month", "").strip()
+
+    if not is_valid_month(selected_month):
+        selected_month = date.today().strftime("%Y-%m")
+
+    return render_template(
+        "budgets.html",
+        budgets=get_budgets(selected_month),
+        categories=EXPENSE_CATEGORIES,
+        selected_month=selected_month,
+    )
 
 
 if __name__ == "__main__":

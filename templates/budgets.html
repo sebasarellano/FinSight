@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Presupuestos · FinSight{% endblock %}
+
+{% block content %}
+<section class="dashboard transactions-page">
+
+    <div class="page-heading">
+        <div>
+            <p class="eyebrow">PLANIFICACIÓN</p>
+            <h1>Presupuestos<span class="heading-period">.</span></h1>
+            <p class="page-description">
+                Define cuánto quieres gastar al mes en cada categoría.
+            </p>
+        </div>
+    </div>
+
+    <section class="panel movement-form-panel">
+        <div class="panel-heading">
+            <div>
+                <p class="eyebrow">LÍMITE MENSUAL</p>
+                <h2>Definir presupuesto</h2>
+                <p class="panel-description">
+                    Si ya existe un límite para esa categoría y mes,
+                    se actualiza con el nuevo importe.
+                </p>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('budgets') }}"
+              class="movement-form">
+
+            <div class="form-field">
+                <label for="category">Categoría</label>
+                <select id="category" name="category" required>
+                    <option value="">Selecciona una categoría</option>
+                    {% for category in categories %}
+                    <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label for="month">Mes</label>
+                <input
+                    id="month"
+                    name="month"
+                    type="month"
+                    value="{{ selected_month }}"
+                    pattern="\d{4}-(0[1-9]|1[0-2])"
+                    placeholder="AAAA-MM"
+                    required
+                >
+            </div>
+
+            <div class="form-field form-field-wide">
+                <label for="amount">Límite (USD)</label>
+                <input
+                    id="amount"
+                    name="amount"
+                    type="number"
+                    min="0.01"
+                    max="1000000"
+                    step="0.01"
+                    placeholder="0.00"
+                    required
+                >
+            </div>
+
+            <div class="form-actions form-field-wide">
+                <p class="form-hint">
+                    Solo se pueden presupuestar categorías de gasto.
+                </p>
+                <button class="button button-primary" type="submit">
+                    <span>+</span> Guardar presupuesto
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel transactions-panel movement-list-panel">
+        <div class="panel-heading transactions-heading">
+            <div>
+                <p class="eyebrow">PRESUPUESTOS GUARDADOS</p>
+                <h2>{{ selected_month|month_label|capitalize }}</h2>
+                <p class="panel-description">
+                    {{ budgets|length }} presupuesto(s) en este mes.
+                </p>
+            </div>
+        </div>
+
+        <form method="GET" action="{{ url_for('budgets') }}"
+              class="movement-form">
+            <div class="form-field">
+                <label for="view_month">Ver otro mes</label>
+                <input
+                    id="view_month"
+                    name="month"
+                    type="month"
+                    value="{{ selected_month }}"
+                    pattern="\d{4}-(0[1-9]|1[0-2])"
+                    placeholder="AAAA-MM"
+                    required
+                >
+            </div>
+
+            <div class="form-actions">
+                <button class="button button-secondary" type="submit">
+                    Ver mes
+                </button>
+            </div>
+        </form>
+
+        {% if budgets %}
+        <div class="table-scroll">
+            <table class="transactions-table">
+                <thead>
+                    <tr>
+                        <th scope="col">CATEGORÍA</th>
+                        <th scope="col" class="amount-column">LÍMITE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for budget in budgets %}
+                    <tr>
+                        <td>
+                            <span class="category-label">
+                                {{ budget['category'] }}
+                            </span>
+                        </td>
+                        <td class="amount-column">
+                            $ {{ "%.2f"|format(budget['amount']) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">◫</div>
+            <h3>Aún no hay presupuestos este mes</h3>
+            <p>
+                Define el primer límite con el formulario de arriba.
+            </p>
+        </div>
+        {% endif %}
+    </section>
+
+</section>
+{% endblock %}
