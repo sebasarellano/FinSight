@@ -13,8 +13,9 @@
     >
 </head>
 <body>
-    {# Sección activa de la barra lateral: la página de edición cuenta como Movimientos #}
+    {# Sección activa de la barra lateral: las páginas de edición cuentan como su sección #}
     {% set in_transactions = request.endpoint in ('transactions', 'edit_transaction') %}
+    {% set in_accounts = request.endpoint in ('accounts', 'edit_account') %}
 
     <div class="app-shell">
         <aside class="sidebar">
@@ -59,8 +60,8 @@
 
                 <a
                     href="{{ url_for('accounts') }}"
-                    class="nav-link {% if request.endpoint == 'accounts' %}active{% endif %}"
-                    {% if request.endpoint == 'accounts' %}aria-current="page"{% endif %}
+                    class="nav-link {% if in_accounts %}active{% endif %}"
+                    {% if in_accounts %}aria-current="page"{% endif %}
                 >
                     <span class="nav-icon" aria-hidden="true">▤</span>
                     <span>Cuentas</span>
@@ -87,7 +88,7 @@
                     <span class="breadcrumb-current">
                         {% if in_transactions %}
                             Movimientos
-                        {% elif request.endpoint == 'accounts' %}
+                        {% elif in_accounts %}
                             Cuentas
                         {% else %}
                             Resumen
