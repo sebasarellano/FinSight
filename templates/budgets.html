@@ -85,6 +85,8 @@
                 <h2>{{ selected_month|month_label|capitalize }}</h2>
                 <p class="panel-description">
                     {{ budgets|length }} presupuesto(s) en este mes.
+                    Se avisa al llegar al {{ warning_percent }} % del límite.
+                    Las transferencias no cuentan como gasto.
                 </p>
             </div>
         </div>
@@ -118,6 +120,9 @@
                     <tr>
                         <th scope="col">CATEGORÍA</th>
                         <th scope="col" class="amount-column">LÍMITE</th>
+                        <th scope="col" class="amount-column">GASTADO</th>
+                        <th scope="col" class="amount-column">DISPONIBLE</th>
+                        <th scope="col">USO</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -128,8 +133,45 @@
                                 {{ budget['category'] }}
                             </span>
                         </td>
+
                         <td class="amount-column">
-                            $ {{ "%.2f"|format(budget['amount']) }}
+                            $ {{ budget['amount']|money }}
+                        </td>
+
+                        <td class="amount-column">
+                            $ {{ budget['spent']|money }}
+                        </td>
+
+                        <td class="amount-column
+                            {% if budget['remaining'] < 0 %}amount-negative{% endif %}">
+                            $ {{ budget['remaining']|money }}
+                        </td>
+
+                        <td>
+                            <div class="budget-usage">
+                                <div class="budget-track"
+                                     role="progressbar"
+                                     aria-label="Uso del presupuesto de {{ budget['category'] }}"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100"
+                                     aria-valuenow="{{ '%.0f'|format(budget['bar_width']) }}">
+                                    <span class="budget-fill budget-fill-{{ budget['status'] }}"
+                                          style="--width: {{ '%.1f'|format(budget['bar_width']) }}%"></span>
+                                </div>
+
+                                <div class="budget-status budget-status-{{ budget['status'] }}">
+                                    <span>{{ budget['used_percent']|percent }}</span>
+                                    <span>
+                                        {% if budget['status'] == 'over' %}
+                                            Superado
+                                        {% elif budget['status'] == 'warning' %}
+                                            Cerca del límite
+                                        {% else %}
+                                            Dentro del límite
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}

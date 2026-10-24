@@ -67,6 +67,10 @@ MAX_INITIAL_BALANCE = 1_000_000_000
 # Tope razonable para el límite de un presupuesto mensual.
 MAX_BUDGET_AMOUNT = 1_000_000
 
+# A partir de este porcentaje de uso, un presupuesto se considera
+# "cerca del límite". A partir del 100 % se considera superado.
+BUDGET_WARNING_PERCENT = 80
+
 
 # ---------------------------------------------------------------
 # Filtros de plantilla: cambian solo cómo se muestra un valor.
@@ -233,24 +237,69 @@ def get_account(account_id):
     return None
 
 
-def get_budgets(month_key):
-    """Obtiene los presupuestos de un mes (formato 'AAAA-MM')."""
+def get_budget_progress(month_key):
+    """Obtiene los presupuestos de un mes (formato 'AAAA-MM') con su avance.
+
+    Para cada presupuesto calcula lo gastado en esa categoría y ese mes
+    (solo gastos: las transferencias no cuentan), lo que queda disponible,
+    el porcentaje usado y su estado:
+    - 'ok': por debajo del umbral de aviso.
+    - 'warning': cerca del límite.
+    - 'over': límite alcanzado o superado.
+    """
     connection = get_db_connection()
 
     try:
         rows = connection.execute(
             """
-            SELECT id, category, month, amount
-            FROM budgets
-            WHERE month = ?
-            ORDER BY category
+            SELECT
+                b.id,
+                b.category,
+                b.month,
+                b.amount,
+                COALESCE(SUM(t.amount), 0) AS spent
+            FROM budgets b
+            LEFT JOIN transactions t
+                ON t.category = b.category
+               AND t.transaction_type = 'expense'
+               AND strftime('%Y-%m', t.transaction_date) = b.month
+            WHERE b.month = ?
+            GROUP BY b.id
+            ORDER BY b.category
             """,
             (month_key,),
         ).fetchall()
     finally:
         connection.close()
 
-    return [dict(row) for row in rows]
+    budgets = []
+
+    for row in rows:
+        limit_amount = float(row["amount"])
+        spent = round(float(row["spent"]), 2)
+        used_percent = spent / limit_amount * 100
+
+        if used_percent >= 100:
+            status = "over"
+        elif used_percent >= BUDGET_WARNING_PERCENT:
+            status = "warning"
+        else:
+            status = "ok"
+
+        budgets.append({
+            "id": row["id"],
+            "category": row["category"],
+            "month": row["month"],
+            "amount": limit_amount,
+            "spent": spent,
+            "remaining": round(limit_amount - spent, 2),
+            "used_percent": used_percent,
+            # La barra nunca pasa del 100 % aunque el gasto lo supere.
+            "bar_width": min(used_percent, 100),
+            "status": status,
+        })
+
+    return budgets
 
 
 def get_month_summary(month_key):
@@ -886,9 +935,10 @@ def budgets():
 
     return render_template(
         "budgets.html",
-        budgets=get_budgets(selected_month),
+        budgets=get_budget_progress(selected_month),
         categories=EXPENSE_CATEGORIES,
         selected_month=selected_month,
+        warning_percent=BUDGET_WARNING_PERCENT,
     )
 
 

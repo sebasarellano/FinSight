@@ -1518,3 +1518,55 @@ a:focus-visible {
         flex-basis: min(38%, 18px);
     }
 }
+/* Presupuestos: barra de progreso y estado de uso. */
+.budget-usage {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 170px;
+}
+
+.budget-track {
+    height: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.budget-fill {
+    display: block;
+    height: 100%;
+    width: var(--width, 0%);
+    border-radius: 999px;
+}
+
+.budget-fill-ok {
+    background: #5fd68f;
+}
+
+.budget-fill-warning {
+    background: #e8b84b;
+}
+
+.budget-fill-over {
+    background: #e5645f;
+}
+
+.budget-status {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 0.8rem;
+}
+
+.budget-status-ok {
+    color: #5fd68f;
+}
+
+.budget-status-warning {
+    color: #e8b84b;
+}
+
+.budget-status-over {
+    color: #e5645f;
+}
