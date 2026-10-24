@@ -1,4 +1,3 @@
-
 import math
 from datetime import date
 
@@ -25,7 +24,51 @@ CATEGORIES = [
     "Otros",
 ]
 
+MONTHS_ES = [
+    "ene", "feb", "mar", "abr", "may", "jun",
+    "jul", "ago", "sep", "oct", "nov", "dic",
+]
 
+# Cómo se presenta cada tipo de cuenta en el dashboard:
+# (símbolo, clase CSS del icono, subtítulo).
+ACCOUNT_STYLES = {
+    "cash": ("$", "account-cash", "Disponible"),
+    "bank": ("▤", "account-bank", "Cuenta corriente"),
+    "savings": ("◇", "account-savings", "Reserva personal"),
+    "other": ("•", "account-bank", "Otra cuenta"),
+}
+
+
+# ---------------------------------------------------------------
+# Filtros de plantilla: cambian solo cómo se muestra un valor.
+# ---------------------------------------------------------------
+@app.template_filter("money")
+def format_money(value):
+    """Convierte 8425.5 en '8.425,50' (formato español)."""
+    value = round(float(value or 0), 2)
+    sign = "-" if value < 0 else ""
+    text = f"{abs(value):,.2f}"  # '8,425.50'
+    # Intercambiar separadores usando un marcador temporal.
+    text = text.replace(",", "X").replace(".", ",").replace("X", ".")
+    return sign + text
+
+
+@app.template_filter("percent")
+def format_percent(value):
+    """Convierte 47.69 en '47,7 %'."""
+    return f"{float(value):.1f}".replace(".", ",") + " %"
+
+
+@app.template_filter("short_date")
+def format_short_date(value):
+    """Convierte '2026-10-24' en '24 oct 2026'."""
+    parsed = date.fromisoformat(value)
+    return f"{parsed.day} {MONTHS_ES[parsed.month - 1]} {parsed.year}"
+
+
+# ---------------------------------------------------------------
+# Consultas a la base de datos
+# ---------------------------------------------------------------
 def get_accounts():
     """Obtiene las cuentas disponibles."""
     connection = get_db_connection()
@@ -38,36 +81,158 @@ def get_accounts():
         connection.close()
 
 
-def get_transactions():
-    """Obtiene los movimientos junto con el nombre de su cuenta."""
+def get_transactions(limit=None):
+    """Obtiene los movimientos junto con el nombre de su cuenta.
+
+    Si se indica 'limit', devuelve solo los más recientes.
+    """
+    query = """
+        SELECT
+            transactions.id,
+            transactions.description,
+            transactions.amount,
+            transactions.transaction_type,
+            transactions.category,
+            transactions.transaction_date,
+            accounts.name AS account_name
+        FROM transactions
+        JOIN accounts
+            ON transactions.account_id = accounts.id
+        ORDER BY
+            transactions.transaction_date DESC,
+            transactions.id DESC
+    """
+    parameters = ()
+
+    if limit is not None:
+        query += " LIMIT ?"
+        parameters = (limit,)
+
     connection = get_db_connection()
 
     try:
-        return connection.execute(
+        return connection.execute(query, parameters).fetchall()
+    finally:
+        connection.close()
+
+
+def get_account_balances():
+    """Calcula el saldo actual de cada cuenta.
+
+    saldo = saldo inicial
+            + ingresos
+            - gastos
+            - transferencias enviadas
+            + transferencias recibidas
+    """
+    connection = get_db_connection()
+
+    try:
+        rows = connection.execute(
             """
             SELECT
-                transactions.id,
-                transactions.description,
-                transactions.amount,
-                transactions.transaction_type,
-                transactions.category,
-                transactions.transaction_date,
-                accounts.name AS account_name
-            FROM transactions
-            JOIN accounts
-                ON transactions.account_id = accounts.id
-            ORDER BY
-                transactions.transaction_date DESC,
-                transactions.id DESC
+                a.id,
+                a.name,
+                a.account_type,
+                a.initial_balance
+                + COALESCE((
+                    -- Movimientos de esta cuenta: los ingresos suman;
+                    -- los gastos y las transferencias enviadas restan.
+                    SELECT SUM(
+                        CASE t.transaction_type
+                            WHEN 'income' THEN t.amount
+                            ELSE -t.amount
+                        END
+                    )
+                    FROM transactions t
+                    WHERE t.account_id = a.id
+                ), 0)
+                + COALESCE((
+                    -- Transferencias que llegan a esta cuenta.
+                    SELECT SUM(t.amount)
+                    FROM transactions t
+                    WHERE t.transaction_type = 'transfer'
+                      AND t.destination_account_id = a.id
+                ), 0) AS balance
+            FROM accounts a
+            ORDER BY a.id
             """
         ).fetchall()
     finally:
         connection.close()
 
+    return [dict(row) for row in rows]
 
+
+def get_month_summary(month_key):
+    """Suma ingresos y gastos de un mes (formato 'AAAA-MM').
+
+    Las transferencias no se incluyen: no son ingresos ni gastos.
+    """
+    connection = get_db_connection()
+
+    try:
+        row = connection.execute(
+            """
+            SELECT
+                COALESCE(SUM(
+                    CASE WHEN transaction_type = 'income'
+                         THEN amount END
+                ), 0) AS income,
+                COALESCE(SUM(
+                    CASE WHEN transaction_type = 'expense'
+                         THEN amount END
+                ), 0) AS expense
+            FROM transactions
+            WHERE strftime('%Y-%m', transaction_date) = ?
+            """,
+            (month_key,),
+        ).fetchone()
+    finally:
+        connection.close()
+
+    return row["income"], row["expense"]
+
+
+# ---------------------------------------------------------------
+# Rutas
+# ---------------------------------------------------------------
 @app.route("/")
 def home():
-    return render_template("dashboard.html")
+    today = date.today()
+
+    # Cuentas con su saldo y su peso dentro del patrimonio.
+    accounts = get_account_balances()
+    total_balance = round(sum(a["balance"] for a in accounts), 2)
+
+    for account in accounts:
+        symbol, css_class, subtitle = ACCOUNT_STYLES[account["account_type"]]
+        account["symbol"] = symbol
+        account["css_class"] = css_class
+        account["subtitle"] = subtitle
+        account["share"] = (
+            max(account["balance"], 0) / total_balance * 100
+            if total_balance > 0
+            else 0
+        )
+
+    # Resumen del mes actual.
+    month_income, month_expense = get_month_summary(today.strftime("%Y-%m"))
+    month_net = month_income - month_expense
+    savings_rate = (
+        month_net / month_income * 100 if month_income > 0 else None
+    )
+
+    return render_template(
+        "dashboard.html",
+        accounts=accounts,
+        total_balance=total_balance,
+        month_income=month_income,
+        month_expense=month_expense,
+        month_net=month_net,
+        savings_rate=savings_rate,
+        recent_transactions=get_transactions(limit=5),
+    )
 
 
 @app.route("/transactions", methods=["GET", "POST"])
