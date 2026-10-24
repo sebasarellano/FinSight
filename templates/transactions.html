@@ -1,0 +1,208 @@
+
+{% extends "base.html" %}
+
+{% block title %}Movimientos · FinSight{% endblock %}
+
+{% block content %}
+<section class="dashboard transactions-page">
+
+    <div class="page-heading">
+        <div>
+            <p class="eyebrow">REGISTRO FINANCIERO</p>
+            <h1>Movimientos<span class="heading-period">.</span></h1>
+            <p class="page-description">
+                Registra y consulta las entradas y salidas de tu dinero.
+            </p>
+        </div>
+    </div>
+
+    <section class="panel movement-form-panel">
+        <div class="panel-heading">
+            <div>
+                <p class="eyebrow">NUEVO REGISTRO</p>
+                <h2>Añadir movimiento</h2>
+                <p class="panel-description">
+                    Completa los datos para guardar una transacción.
+                </p>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('transactions') }}"
+              class="movement-form">
+
+            <div class="form-field form-field-wide">
+                <label for="description">Descripción</label>
+                <input
+                    id="description"
+                    name="description"
+                    type="text"
+                    maxlength="120"
+                    placeholder="Ej. Compra del supermercado"
+                    required
+                >
+            </div>
+
+            <div class="form-field">
+                <label for="transaction_type">Tipo de movimiento</label>
+                <select id="transaction_type" name="transaction_type" required>
+                    <option value="">Selecciona un tipo</option>
+                    <option value="income">Ingreso</option>
+                    <option value="expense">Gasto</option>
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label for="amount">Importe (USD)</label>
+                <input
+                    id="amount"
+                    name="amount"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    placeholder="0.00"
+                    required
+                >
+            </div>
+
+            <div class="form-field">
+                <label for="category">Categoría</label>
+                <select id="category" name="category" required>
+                    <option value="">Selecciona una categoría</option>
+                    {% for category in categories %}
+                    <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label for="transaction_date">Fecha</label>
+                <input
+                    id="transaction_date"
+                    name="transaction_date"
+                    type="date"
+                    value="{{ today }}"
+                    required
+                >
+            </div>
+
+            <div class="form-field form-field-wide">
+                <label for="account_id">Cuenta asociada</label>
+                <select id="account_id" name="account_id" required>
+                    <option value="">Selecciona una cuenta</option>
+                    {% for account in accounts %}
+                    <option value="{{ account['id'] }}">
+                        {{ account['name'] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-actions form-field-wide">
+                <p class="form-hint">
+                    Los importes se registran en dólares estadounidenses.
+                </p>
+                <button class="button button-primary" type="submit">
+                    <span>+</span> Guardar movimiento
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel transactions-panel movement-list-panel">
+        <div class="panel-heading transactions-heading">
+            <div>
+                <p class="eyebrow">HISTORIAL</p>
+                <h2>Todos los movimientos</h2>
+                <p class="panel-description">
+                    {{ transactions|length }} registro(s) guardado(s).
+                </p>
+            </div>
+        </div>
+
+        {% if transactions %}
+        <div class="table-scroll">
+            <table class="transactions-table">
+                <thead>
+                    <tr>
+                        <th scope="col">MOVIMIENTO</th>
+                        <th scope="col">CATEGORÍA</th>
+                        <th scope="col">FECHA</th>
+                        <th scope="col">CUENTA</th>
+                        <th scope="col" class="amount-column">IMPORTE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td>
+                            <div class="transaction-name">
+                                <span class="transaction-symbol
+                                    {% if transaction['transaction_type'] == 'income' %}
+                                        symbol-income
+                                    {% else %}
+                                        symbol-expense
+                                    {% endif %}">
+                                    {% if transaction['transaction_type'] == 'income' %}
+                                        ↓
+                                    {% else %}
+                                        ↑
+                                    {% endif %}
+                                </span>
+                                <span>
+                                    <strong>{{ transaction['description'] }}</strong>
+                                    <small>
+                                        {% if transaction['transaction_type'] == 'income' %}
+                                            Ingreso
+                                        {% else %}
+                                            Gasto
+                                        {% endif %}
+                                    </small>
+                                </span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="category-label">
+                                {{ transaction['category'] }}
+                            </span>
+                        </td>
+
+                        <td class="date-cell">
+                            {{ transaction['transaction_date'] }}
+                        </td>
+
+                        <td class="account-cell">
+                            {{ transaction['account_name'] }}
+                        </td>
+
+                        <td class="amount-column
+                            {% if transaction['transaction_type'] == 'income' %}
+                                amount-positive
+                            {% else %}
+                                amount-negative
+                            {% endif %}">
+                            {% if transaction['transaction_type'] == 'income' %}
+                                +
+                            {% else %}
+                                −
+                            {% endif %}
+                            $ {{ "%.2f"|format(transaction['amount']) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">↔</div>
+            <h3>Aún no hay movimientos</h3>
+            <p>
+                Registra tu primer ingreso o gasto con el formulario de arriba.
+            </p>
+        </div>
+        {% endif %}
+    </section>
+
+</section>
+{% endblock %}

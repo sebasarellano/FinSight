@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -18,31 +18,50 @@
         <aside class="sidebar">
             <a href="{{ url_for('home') }}" class="brand">
                 <span class="brand-mark">F</span>
-                <span class="brand-name">FinSight<span class="brand-period">.</span></span>
+                <span class="brand-name">
+                    FinSight<span class="brand-period">.</span>
+                </span>
             </a>
 
             <div class="sidebar-label">GENERAL</div>
 
             <nav class="navigation" aria-label="Navegación principal">
-                <a href="{{ url_for('home') }}" class="nav-link active">
-                    <span class="nav-icon">▦</span>
+                <a
+                    href="{{ url_for('home') }}"
+                    class="nav-link {% if request.endpoint == 'home' %}active{% endif %}"
+                    {% if request.endpoint == 'home' %}aria-current="page"{% endif %}
+                >
+                    <span class="nav-icon" aria-hidden="true">▦</span>
                     <span>Resumen</span>
                 </a>
 
-                <a href="#" class="nav-link" aria-disabled="true">
-                    <span class="nav-icon">↔</span>
+                <a
+                    href="{{ url_for('transactions') }}"
+                    class="nav-link {% if request.endpoint == 'transactions' %}active{% endif %}"
+                    {% if request.endpoint == 'transactions' %}aria-current="page"{% endif %}
+                >
+                    <span class="nav-icon" aria-hidden="true">↔</span>
                     <span>Movimientos</span>
-                    <span class="nav-soon">Pronto</span>
                 </a>
 
-                <a href="#" class="nav-link" aria-disabled="true">
-                    <span class="nav-icon">◫</span>
+                <a
+                    href="#"
+                    class="nav-link"
+                    aria-disabled="true"
+                    title="Esta sección estará disponible próximamente"
+                >
+                    <span class="nav-icon" aria-hidden="true">◫</span>
                     <span>Presupuestos</span>
                     <span class="nav-soon">Pronto</span>
                 </a>
 
-                <a href="#" class="nav-link" aria-disabled="true">
-                    <span class="nav-icon">▤</span>
+                <a
+                    href="#"
+                    class="nav-link"
+                    aria-disabled="true"
+                    title="Esta sección estará disponible próximamente"
+                >
+                    <span class="nav-icon" aria-hidden="true">▤</span>
                     <span>Cuentas</span>
                     <span class="nav-soon">Pronto</span>
                 </a>
@@ -53,16 +72,25 @@
                     <span class="status-dot"></span>
                     <span>Entorno local</span>
                 </div>
-                <p class="sidebar-version">FINSIGHT · VERSIÓN INICIAL</p>
+
+                <p class="sidebar-version">
+                    FINSIGHT · VERSIÓN INICIAL
+                </p>
             </div>
         </aside>
 
         <main class="main-content">
             <header class="topbar">
                 <div class="breadcrumb">
-                    <span>FinSight</span>
+                    <a href="{{ url_for('home') }}">FinSight</a>
                     <span class="breadcrumb-separator">/</span>
-                    <span class="breadcrumb-current">Resumen</span>
+                    <span class="breadcrumb-current">
+                        {% if request.endpoint == 'transactions' %}
+                            Movimientos
+                        {% else %}
+                            Resumen
+                        {% endif %}
+                    </span>
                 </div>
 
                 <div class="topbar-right">
@@ -70,17 +98,36 @@
                         <span class="status-dot"></span>
                         Modo demostración
                     </span>
+
                     <div class="avatar" aria-label="Perfil local">S</div>
                 </div>
             </header>
 
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages" aria-live="polite">
+                        {% for category, message in messages %}
+                            <div class="flash-message flash-{{ category }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
             {% block content %}{% endblock %}
 
             <footer class="page-footer">
-                <span>FinSight <span class="footer-dot">·</span> Finanzas con perspectiva.</span>
+                <span>
+                    FinSight
+                    <span class="footer-dot">·</span>
+                    Finanzas con perspectiva.
+                </span>
+
                 <span>Los datos actuales son de demostración.</span>
             </footer>
         </main>
     </div>
 </body>
 </html>
+```
