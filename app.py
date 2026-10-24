@@ -38,6 +38,14 @@ ACCOUNT_STYLES = {
     "other": ("•", "account-bank", "Otra cuenta"),
 }
 
+# Nombre legible de cada tipo de cuenta (se usa en la página de cuentas).
+ACCOUNT_TYPE_LABELS = {
+    "cash": "Efectivo",
+    "bank": "Cuenta bancaria",
+    "savings": "Ahorros",
+    "other": "Otra cuenta",
+}
+
 
 # ---------------------------------------------------------------
 # Filtros de plantilla: cambian solo cómo se muestra un valor.
@@ -158,6 +166,7 @@ def get_account_balances():
                 a.id,
                 a.name,
                 a.account_type,
+                a.initial_balance,
                 a.initial_balance
                 + COALESCE((
                     -- Movimientos de esta cuenta: los ingresos suman;
@@ -317,6 +326,25 @@ def home():
         month_net=month_net,
         savings_rate=savings_rate,
         recent_transactions=get_transactions(limit=5),
+    )
+
+
+@app.route("/accounts")
+def accounts():
+    """Lista las cuentas con su saldo inicial y su saldo actual."""
+    account_rows = get_account_balances()
+    total_balance = round(sum(a["balance"] for a in account_rows), 2)
+
+    for account in account_rows:
+        symbol, css_class, _ = ACCOUNT_STYLES[account["account_type"]]
+        account["symbol"] = symbol
+        account["css_class"] = css_class
+        account["type_label"] = ACCOUNT_TYPE_LABELS[account["account_type"]]
+
+    return render_template(
+        "accounts.html",
+        accounts=account_rows,
+        total_balance=total_balance,
     )
 
 
