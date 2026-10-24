@@ -1417,3 +1417,33 @@ a:focus-visible {
         transition: none;
     }
 }
+
+/* ==========================================================
+   Enlace de edición dentro de cada cuenta
+   ========================================================== */
+.account-edit-link {
+    display: inline-block;
+    margin-top: 0.35rem;
+    font-size: 0.8125rem;
+    color: inherit;
+    opacity: 0.7;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: opacity 0.15s ease;
+}
+
+.account-edit-link:hover,
+.account-edit-link:focus-visible {
+    opacity: 1;
+}
+
+.account-edit-link:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .account-edit-link {
+        transition: none;
+    }
+}

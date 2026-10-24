@@ -1,4 +1,3 @@
-
 import sqlite3
 from pathlib import Path
 
@@ -37,8 +36,9 @@ def initialize_database():
                             'other'
                         )
                     ),
-                initial_balance REAL NOT NULL DEFAULT 0
-                    CHECK (initial_balance >= 0),
+                -- Puede ser negativo: representa una cuenta que empieza
+                -- con deuda (por ejemplo, una tarjeta de crédito).
+                initial_balance REAL NOT NULL DEFAULT 0,
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
 

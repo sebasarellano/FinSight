@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Cuentas · FinSight{% endblock %}
+
+{% block content %}
+<section class="dashboard accounts-page">
+
+    <div class="page-heading">
+        <div>
+            <p class="eyebrow">TUS FUENTES DE DINERO</p>
+            <h1>Cuentas<span class="heading-period">.</span></h1>
+            <p class="page-description">
+                Consulta el saldo actual de cada cuenta.
+            </p>
+        </div>
+    </div>
+
+    <section class="panel accounts-panel">
+        <div class="panel-heading">
+            <div>
+                <p class="eyebrow">RESUMEN</p>
+                <h2>Todas tus cuentas</h2>
+                <p class="panel-description">
+                    El saldo actual es el saldo inicial más los movimientos.
+                </p>
+            </div>
+            <span class="account-count">{{ '%02d'|format(accounts|length) }}</span>
+        </div>
+
+        {% if accounts %}
+        <div class="account-list">
+            {% for account in accounts %}
+            <div class="account-row">
+                <div class="account-symbol {{ account.css_class }}">{{ account.symbol }}</div>
+                <div class="account-info">
+                    <span class="account-name">{{ account.name }}</span>
+                    <span class="account-subtitle">
+                        {{ account.type_label }} · saldo inicial $ {{ account.initial_balance|money }}
+                    </span>
+                    <a class="account-edit-link"
+                       href="{{ url_for('edit_account', account_id=account.id) }}"
+                       aria-label="Editar cuenta: {{ account.name }}">
+                        Editar
+                    </a>
+                </div>
+                <div class="account-amount">
+                    <strong>$ {{ account.balance|money }}</strong>
+                    <span>Saldo actual</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="account-total">
+            <span>Saldo consolidado</span>
+            <strong>$ {{ total_balance|money }}</strong>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">$</div>
+            <h3>Aún no hay cuentas</h3>
+            <p>Todavía no hay cuentas registradas.</p>
+        </div>
+        {% endif %}
+    </section>
+
+</section>
+{% endblock %}

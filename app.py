@@ -38,6 +38,17 @@ ACCOUNT_STYLES = {
     "other": ("•", "account-bank", "Otra cuenta"),
 }
 
+# Nombre legible de cada tipo de cuenta (páginas de cuentas).
+ACCOUNT_TYPE_LABELS = {
+    "cash": "Efectivo",
+    "bank": "Cuenta bancaria",
+    "savings": "Ahorros",
+    "other": "Otra cuenta",
+}
+
+# Tope razonable para un saldo inicial (en valor absoluto).
+MAX_INITIAL_BALANCE = 1_000_000_000
+
 
 # ---------------------------------------------------------------
 # Filtros de plantilla: cambian solo cómo se muestra un valor.
@@ -158,6 +169,7 @@ def get_account_balances():
                 a.id,
                 a.name,
                 a.account_type,
+                a.initial_balance,
                 a.initial_balance
                 + COALESCE((
                     -- Movimientos de esta cuenta: los ingresos suman;
@@ -186,6 +198,14 @@ def get_account_balances():
         connection.close()
 
     return [dict(row) for row in rows]
+
+
+def get_account(account_id):
+    """Devuelve una cuenta (con su saldo actual) o None si no existe."""
+    for account in get_account_balances():
+        if account["id"] == account_id:
+            return account
+    return None
 
 
 def get_month_summary(month_key):
@@ -219,7 +239,7 @@ def get_month_summary(month_key):
 
 
 # ---------------------------------------------------------------
-# Validación del formulario de movimientos
+# Validación de formularios
 # ---------------------------------------------------------------
 def parse_transaction_form(form):
     """Valida los datos del formulario (crear y editar usan lo mismo).
@@ -279,6 +299,43 @@ def parse_transaction_form(form):
     return values, None
 
 
+def parse_account_form(form):
+    """Valida los datos del formulario de una cuenta.
+
+    Devuelve (valores, error), igual que parse_transaction_form.
+    El saldo inicial puede ser negativo (una cuenta con deuda).
+    """
+    name = form.get("name", "").strip()
+    account_type = form.get("account_type", "").strip()
+    balance_text = form.get("initial_balance", "").strip()
+
+    if not name or len(name) > 60:
+        return None, (
+            "El nombre es obligatorio y no puede superar los 60 caracteres."
+        )
+
+    if account_type not in ACCOUNT_TYPE_LABELS:
+        return None, "Selecciona un tipo de cuenta válido."
+
+    try:
+        initial_balance = float(balance_text)
+    except ValueError:
+        return None, "El saldo inicial debe ser un número."
+
+    if (
+        not math.isfinite(initial_balance)
+        or abs(initial_balance) > MAX_INITIAL_BALANCE
+    ):
+        return None, "El saldo inicial está fuera del rango permitido."
+
+    values = {
+        "name": name,
+        "account_type": account_type,
+        "initial_balance": round(initial_balance, 2),
+    }
+    return values, None
+
+
 # ---------------------------------------------------------------
 # Rutas
 # ---------------------------------------------------------------
@@ -317,6 +374,96 @@ def home():
         month_net=month_net,
         savings_rate=savings_rate,
         recent_transactions=get_transactions(limit=5),
+    )
+
+
+@app.route("/accounts")
+def accounts():
+    """Lista las cuentas con su saldo inicial y su saldo actual."""
+    account_rows = get_account_balances()
+    total_balance = round(sum(a["balance"] for a in account_rows), 2)
+
+    for account in account_rows:
+        symbol, css_class, _ = ACCOUNT_STYLES[account["account_type"]]
+        account["symbol"] = symbol
+        account["css_class"] = css_class
+        account["type_label"] = ACCOUNT_TYPE_LABELS[account["account_type"]]
+
+    return render_template(
+        "accounts.html",
+        accounts=account_rows,
+        total_balance=total_balance,
+    )
+
+
+@app.route("/accounts/<int:account_id>/edit", methods=["GET", "POST"])
+def edit_account(account_id):
+    account = get_account(account_id)
+
+    if account is None:
+        flash("La cuenta que intentas editar no existe.", "error")
+        return redirect(url_for("accounts"))
+
+    if request.method == "POST":
+        values, error = parse_account_form(request.form)
+
+        if error:
+            flash(error, "error")
+            return redirect(url_for("edit_account", account_id=account_id))
+
+        values["id"] = account_id
+
+        connection = get_db_connection()
+
+        try:
+            # No se permiten dos cuentas con el mismo nombre: el selector
+            # de Movimientos mostraría opciones idénticas.
+            duplicate = connection.execute(
+                """
+                SELECT id FROM accounts
+                WHERE lower(name) = lower(:name) AND id != :id
+                """,
+                values,
+            ).fetchone()
+
+            if duplicate is not None:
+                flash("Ya existe otra cuenta con ese nombre.", "error")
+                return redirect(
+                    url_for("edit_account", account_id=account_id)
+                )
+
+            connection.execute(
+                """
+                UPDATE accounts
+                SET
+                    name = :name,
+                    account_type = :account_type,
+                    initial_balance = :initial_balance
+                WHERE id = :id
+                """,
+                values,
+            )
+            connection.commit()
+
+        except Exception:
+            connection.rollback()
+            app.logger.exception("No se pudo actualizar la cuenta")
+            flash(
+                "No se pudo actualizar la cuenta. Inténtalo de nuevo.",
+                "error",
+            )
+            return redirect(url_for("edit_account", account_id=account_id))
+
+        finally:
+            connection.close()
+
+        flash("Cuenta actualizada correctamente.", "success")
+        return redirect(url_for("accounts"))
+
+    return render_template(
+        "edit_account.html",
+        account=account,
+        type_labels=ACCOUNT_TYPE_LABELS,
     )
 
 
