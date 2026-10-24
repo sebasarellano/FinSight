@@ -116,6 +116,30 @@ def get_transactions(limit=None):
         connection.close()
 
 
+def get_transaction(transaction_id):
+    """Obtiene un movimiento por su id, o None si no existe."""
+    connection = get_db_connection()
+
+    try:
+        return connection.execute(
+            """
+            SELECT
+                id,
+                description,
+                amount,
+                transaction_type,
+                category,
+                transaction_date,
+                account_id
+            FROM transactions
+            WHERE id = ?
+            """,
+            (transaction_id,),
+        ).fetchone()
+    finally:
+        connection.close()
+
+
 def get_account_balances():
     """Calcula el saldo actual de cada cuenta.
 
@@ -195,6 +219,67 @@ def get_month_summary(month_key):
 
 
 # ---------------------------------------------------------------
+# Validación del formulario de movimientos
+# ---------------------------------------------------------------
+def parse_transaction_form(form):
+    """Valida los datos del formulario (crear y editar usan lo mismo).
+
+    Devuelve una tupla (valores, error):
+    - si todo es válido: (diccionario con los valores limpios, None)
+    - si algo falla: (None, mensaje de error para el usuario)
+    """
+    description = form.get("description", "").strip()
+    amount_text = form.get("amount", "").strip()
+    transaction_type = form.get("transaction_type", "").strip()
+    category = form.get("category", "").strip()
+    transaction_date = form.get("transaction_date", "").strip()
+    account_id_text = form.get("account_id", "").strip()
+
+    if not description or len(description) > 120:
+        return None, (
+            "La descripción es obligatoria y no puede superar "
+            "los 120 caracteres."
+        )
+
+    if category not in CATEGORIES:
+        return None, "Selecciona una categoría válida."
+
+    if transaction_type not in ("income", "expense"):
+        return None, "Selecciona un tipo de movimiento válido."
+
+    # Convertir y validar el importe.
+    try:
+        amount = float(amount_text)
+    except ValueError:
+        amount = 0
+
+    if not math.isfinite(amount) or amount <= 0:
+        return None, "El importe debe ser un número mayor que cero."
+
+    # Validar la fecha.
+    try:
+        parsed_date = date.fromisoformat(transaction_date)
+    except ValueError:
+        return None, "Introduce una fecha válida."
+
+    # Validar el identificador de la cuenta.
+    try:
+        account_id = int(account_id_text)
+    except ValueError:
+        return None, "Selecciona una cuenta válida."
+
+    values = {
+        "description": description,
+        "amount": amount,
+        "transaction_type": transaction_type,
+        "category": category,
+        "transaction_date": parsed_date.isoformat(),
+        "account_id": account_id,
+    }
+    return values, None
+
+
+# ---------------------------------------------------------------
 # Rutas
 # ---------------------------------------------------------------
 @app.route("/")
@@ -238,52 +323,10 @@ def home():
 @app.route("/transactions", methods=["GET", "POST"])
 def transactions():
     if request.method == "POST":
-        description = request.form.get("description", "").strip()
-        amount_text = request.form.get("amount", "").strip()
-        transaction_type = request.form.get("transaction_type", "").strip()
-        category = request.form.get("category", "").strip()
-        transaction_date = request.form.get("transaction_date", "").strip()
-        account_id_text = request.form.get("account_id", "").strip()
+        values, error = parse_transaction_form(request.form)
 
-        # Validar que los campos de texto estén completos.
-        if not description or len(description) > 120:
-            flash(
-                "La descripción es obligatoria y no puede superar "
-                "los 120 caracteres.",
-                "error",
-            )
-            return redirect(url_for("transactions"))
-
-        if category not in CATEGORIES:
-            flash("Selecciona una categoría válida.", "error")
-            return redirect(url_for("transactions"))
-
-        if transaction_type not in ("income", "expense"):
-            flash("Selecciona un tipo de movimiento válido.", "error")
-            return redirect(url_for("transactions"))
-
-        # Convertir y validar el importe.
-        try:
-            amount = float(amount_text)
-        except ValueError:
-            amount = 0
-
-        if not math.isfinite(amount) or amount <= 0:
-            flash("El importe debe ser un número mayor que cero.", "error")
-            return redirect(url_for("transactions"))
-
-        # Validar la fecha.
-        try:
-            parsed_date = date.fromisoformat(transaction_date)
-        except ValueError:
-            flash("Introduce una fecha válida.", "error")
-            return redirect(url_for("transactions"))
-
-        # Validar el identificador de la cuenta.
-        try:
-            account_id = int(account_id_text)
-        except ValueError:
-            flash("Selecciona una cuenta válida.", "error")
+        if error:
+            flash(error, "error")
             return redirect(url_for("transactions"))
 
         connection = get_db_connection()
@@ -291,7 +334,7 @@ def transactions():
         try:
             account = connection.execute(
                 "SELECT id FROM accounts WHERE id = ?",
-                (account_id,),
+                (values["account_id"],),
             ).fetchone()
 
             if account is None:
@@ -308,16 +351,16 @@ def transactions():
                     transaction_date,
                     account_id
                 )
-                VALUES (?, ?, ?, ?, ?, ?)
+                VALUES (
+                    :description,
+                    :amount,
+                    :transaction_type,
+                    :category,
+                    :transaction_date,
+                    :account_id
+                )
                 """,
-                (
-                    description,
-                    amount,
-                    transaction_type,
-                    category,
-                    parsed_date.isoformat(),
-                    account_id,
-                ),
+                values,
             )
             connection.commit()
 
@@ -343,6 +386,117 @@ def transactions():
         categories=CATEGORIES,
         today=date.today().isoformat(),
     )
+
+
+@app.route("/transactions/<int:transaction_id>/edit", methods=["GET", "POST"])
+def edit_transaction(transaction_id):
+    transaction = get_transaction(transaction_id)
+
+    # Solo se pueden editar ingresos y gastos. Las transferencias
+    # todavía no se crean desde la interfaz.
+    if transaction is None or transaction["transaction_type"] == "transfer":
+        flash("El movimiento que intentas editar no existe.", "error")
+        return redirect(url_for("transactions"))
+
+    if request.method == "POST":
+        values, error = parse_transaction_form(request.form)
+
+        if error:
+            flash(error, "error")
+            return redirect(
+                url_for("edit_transaction", transaction_id=transaction_id)
+            )
+
+        # El id del movimiento se añade a los valores para el UPDATE.
+        values["id"] = transaction_id
+
+        connection = get_db_connection()
+
+        try:
+            account = connection.execute(
+                "SELECT id FROM accounts WHERE id = ?",
+                (values["account_id"],),
+            ).fetchone()
+
+            if account is None:
+                flash("La cuenta seleccionada no existe.", "error")
+                return redirect(
+                    url_for("edit_transaction", transaction_id=transaction_id)
+                )
+
+            connection.execute(
+                """
+                UPDATE transactions
+                SET
+                    description = :description,
+                    amount = :amount,
+                    transaction_type = :transaction_type,
+                    category = :category,
+                    transaction_date = :transaction_date,
+                    account_id = :account_id
+                WHERE id = :id
+                """,
+                values,
+            )
+            connection.commit()
+
+        except Exception:
+            connection.rollback()
+            app.logger.exception("No se pudo actualizar el movimiento")
+            flash(
+                "No se pudo actualizar el movimiento. Inténtalo de nuevo.",
+                "error",
+            )
+            return redirect(
+                url_for("edit_transaction", transaction_id=transaction_id)
+            )
+
+        finally:
+            connection.close()
+
+        flash("Movimiento actualizado correctamente.", "success")
+        return redirect(url_for("transactions"))
+
+    return render_template(
+        "edit_transaction.html",
+        transaction=transaction,
+        accounts=get_accounts(),
+        categories=CATEGORIES,
+    )
+
+
+# Eliminar solo acepta POST: una acción que modifica datos no debe
+# poder dispararse con un simple enlace (GET).
+@app.route("/transactions/<int:transaction_id>/delete", methods=["POST"])
+def delete_transaction(transaction_id):
+    connection = get_db_connection()
+
+    try:
+        cursor = connection.execute(
+            "DELETE FROM transactions WHERE id = ?",
+            (transaction_id,),
+        )
+        connection.commit()
+        deleted = cursor.rowcount > 0
+
+    except Exception:
+        connection.rollback()
+        app.logger.exception("No se pudo eliminar el movimiento")
+        flash(
+            "No se pudo eliminar el movimiento. Inténtalo de nuevo.",
+            "error",
+        )
+        return redirect(url_for("transactions"))
+
+    finally:
+        connection.close()
+
+    if deleted:
+        flash("Movimiento eliminado correctamente.", "success")
+    else:
+        flash("El movimiento ya no existe.", "error")
+
+    return redirect(url_for("transactions"))
 
 
 if __name__ == "__main__":

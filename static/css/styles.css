@@ -1354,3 +1354,66 @@ a:focus-visible {
         transition: none;
     }
 }
+
+/* ==========================================================
+   Acciones por fila: editar y eliminar movimientos
+   ========================================================== */
+.actions-column {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.row-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.row-actions form {
+    margin: 0;
+}
+
+.button-small {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8125rem;
+}
+
+.button-secondary {
+    background: transparent;
+    color: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.button-secondary:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.32);
+}
+
+.button-danger {
+    background: transparent;
+    color: #f08a8a;
+    border: 1px solid rgba(240, 138, 138, 0.35);
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.button-danger:hover {
+    background: rgba(240, 138, 138, 0.12);
+    border-color: rgba(240, 138, 138, 0.6);
+}
+
+.button-secondary:focus-visible,
+.button-danger:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .button-secondary,
+    .button-danger {
+        transition: none;
+    }
+}
