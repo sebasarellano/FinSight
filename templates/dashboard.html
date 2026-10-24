@@ -113,8 +113,8 @@
             </div>
 
             <div class="chart" role="img"
-                 aria-label="Gráfico ilustrativo de ingresos y gastos mensuales">
-                <div class="chart-grid">
+                 aria-label="Ingresos y gastos reales de los últimos seis meses">
+                <div class="chart-grid" aria-hidden="true">
                     <span></span>
                     <span></span>
                     <span></span>
@@ -122,59 +122,29 @@
                 </div>
 
                 <div class="chart-columns">
-                    <div class="chart-month">
+                    {% for month in monthly_cash_flow %}
+                    <div class="chart-month{% if month.is_current %} current-month{% endif %}">
                         <div class="bar-pair">
-                            <span class="bar bar-income" style="--height: 58%"></span>
-                            <span class="bar bar-expense" style="--height: 36%"></span>
+                            <span
+                                class="bar bar-income"
+                                style="--height: {{ month.income_height }}%"
+                                title="Ingresos de {{ month.month }}: $ {{ month.income|money }}"
+                            ></span>
+                            <span
+                                class="bar bar-expense"
+                                style="--height: {{ month.expense_height }}%"
+                                title="Gastos de {{ month.month }}: $ {{ month.expense|money }}"
+                            ></span>
                         </div>
-                        <span class="month-label">May</span>
+                        <span class="month-label">{{ month.month }}</span>
                     </div>
-
-                    <div class="chart-month">
-                        <div class="bar-pair">
-                            <span class="bar bar-income" style="--height: 72%"></span>
-                            <span class="bar bar-expense" style="--height: 43%"></span>
-                        </div>
-                        <span class="month-label">Jun</span>
-                    </div>
-
-                    <div class="chart-month">
-                        <div class="bar-pair">
-                            <span class="bar bar-income" style="--height: 63%"></span>
-                            <span class="bar bar-expense" style="--height: 48%"></span>
-                        </div>
-                        <span class="month-label">Jul</span>
-                    </div>
-
-                    <div class="chart-month">
-                        <div class="bar-pair">
-                            <span class="bar bar-income" style="--height: 86%"></span>
-                            <span class="bar bar-expense" style="--height: 51%"></span>
-                        </div>
-                        <span class="month-label">Ago</span>
-                    </div>
-
-                    <div class="chart-month">
-                        <div class="bar-pair">
-                            <span class="bar bar-income" style="--height: 68%"></span>
-                            <span class="bar bar-expense" style="--height: 42%"></span>
-                        </div>
-                        <span class="month-label">Sep</span>
-                    </div>
-
-                    <div class="chart-month current-month">
-                        <div class="bar-pair">
-                            <span class="bar bar-income" style="--height: 92%"></span>
-                            <span class="bar bar-expense" style="--height: 49%"></span>
-                        </div>
-                        <span class="month-label">Oct</span>
-                    </div>
+                    {% endfor %}
                 </div>
             </div>
 
             <div class="chart-note">
                 <span class="note-mark">i</span>
-                <span>Visualización ilustrativa, pendiente de conectar a tus datos.</span>
+                <span>Datos reales de SQLite. Las transferencias no se incluyen.</span>
             </div>
         </article>
 
