@@ -25,3 +25,8 @@ htmlcov/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Bases de datos locales
+instance/*.db
+instance/*.sqlite
+instance/*.sqlite3
