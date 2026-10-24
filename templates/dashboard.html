@@ -1,0 +1,303 @@
+
+{% extends "base.html" %}
+
+{% block title %}Resumen financiero · FinSight{% endblock %}
+
+{% block content %}
+<section class="dashboard">
+
+    <div class="page-heading">
+        <div>
+            <p class="eyebrow">TU ESPACIO FINANCIERO</p>
+            <h1>Resumen general<span class="heading-period">.</span></h1>
+            <p class="page-description">
+                Una visión clara de cómo se mueve tu dinero.
+            </p>
+        </div>
+
+        <button class="button button-primary" type="button" disabled
+                title="Disponible cuando implementemos los movimientos">
+            <span>+</span> Nuevo movimiento
+        </button>
+    </div>
+
+    <section class="balance-panel" aria-labelledby="balance-title">
+        <div class="balance-top">
+            <div>
+                <p class="balance-label" id="balance-title">Patrimonio total</p>
+                <p class="balance-caption">Todas tus cuentas</p>
+            </div>
+            <span class="balance-icon" aria-hidden="true">↗</span>
+        </div>
+
+        <div class="balance-main">
+            <h2>$ 8.425<span class="decimal">,50</span></h2>
+            <span class="balance-period">USD</span>
+        </div>
+
+        <div class="balance-divider"></div>
+
+        <div class="balance-bottom">
+            <div class="balance-insight">
+                <span class="insight-dot"></span>
+                <span>Saldo de ejemplo para el diseño inicial</span>
+            </div>
+            <span class="balance-account-count">3 cuentas de ejemplo</span>
+        </div>
+
+        <div class="balance-decoration decoration-one"></div>
+        <div class="balance-decoration decoration-two"></div>
+    </section>
+
+    <section class="metrics-grid" aria-label="Indicadores financieros">
+        <article class="metric-card">
+            <div class="metric-top">
+                <span class="metric-label">Ingresos del mes</span>
+                <span class="metric-icon income-icon">↓</span>
+            </div>
+            <p class="metric-value">$ 2.450,00</p>
+            <p class="metric-footnote">
+                <span class="metric-accent">Ingresos</span>
+                <span>· Este mes</span>
+            </p>
+        </article>
+
+        <article class="metric-card">
+            <div class="metric-top">
+                <span class="metric-label">Gastos del mes</span>
+                <span class="metric-icon expense-icon">↑</span>
+            </div>
+            <p class="metric-value">$ 1.280,40</p>
+            <p class="metric-footnote">
+                <span class="metric-neutral">Egresos</span>
+                <span>· Este mes</span>
+            </p>
+        </article>
+
+        <article class="metric-card">
+            <div class="metric-top">
+                <span class="metric-label">Ahorro neto</span>
+                <span class="metric-icon savings-icon">↗</span>
+            </div>
+            <p class="metric-value">$ 1.169,60</p>
+            <p class="metric-footnote">
+                <span class="metric-accent">47,7 %</span>
+                <span>de los ingresos</span>
+            </p>
+        </article>
+    </section>
+
+    <section class="content-grid">
+
+        <article class="panel chart-panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">TENDENCIA</p>
+                    <h2>Flujo de dinero</h2>
+                    <p class="panel-description">Ingresos y gastos por mes</p>
+                </div>
+                <span class="period-chip">Últimos 6 meses</span>
+            </div>
+
+            <div class="chart-legend">
+                <span><i class="legend-dot legend-income"></i>Ingresos</span>
+                <span><i class="legend-dot legend-expense"></i>Gastos</span>
+            </div>
+
+            <div class="chart" role="img"
+                 aria-label="Gráfico ilustrativo de ingresos y gastos mensuales">
+                <div class="chart-grid">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+                <div class="chart-columns">
+                    <div class="chart-month">
+                        <div class="bar-pair">
+                            <span class="bar bar-income" style="--height: 58%"></span>
+                            <span class="bar bar-expense" style="--height: 36%"></span>
+                        </div>
+                        <span class="month-label">May</span>
+                    </div>
+
+                    <div class="chart-month">
+                        <div class="bar-pair">
+                            <span class="bar bar-income" style="--height: 72%"></span>
+                            <span class="bar bar-expense" style="--height: 43%"></span>
+                        </div>
+                        <span class="month-label">Jun</span>
+                    </div>
+
+                    <div class="chart-month">
+                        <div class="bar-pair">
+                            <span class="bar bar-income" style="--height: 63%"></span>
+                            <span class="bar bar-expense" style="--height: 48%"></span>
+                        </div>
+                        <span class="month-label">Jul</span>
+                    </div>
+
+                    <div class="chart-month">
+                        <div class="bar-pair">
+                            <span class="bar bar-income" style="--height: 86%"></span>
+                            <span class="bar bar-expense" style="--height: 51%"></span>
+                        </div>
+                        <span class="month-label">Ago</span>
+                    </div>
+
+                    <div class="chart-month">
+                        <div class="bar-pair">
+                            <span class="bar bar-income" style="--height: 68%"></span>
+                            <span class="bar bar-expense" style="--height: 42%"></span>
+                        </div>
+                        <span class="month-label">Sep</span>
+                    </div>
+
+                    <div class="chart-month current-month">
+                        <div class="bar-pair">
+                            <span class="bar bar-income" style="--height: 92%"></span>
+                            <span class="bar bar-expense" style="--height: 49%"></span>
+                        </div>
+                        <span class="month-label">Oct</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-note">
+                <span class="note-mark">i</span>
+                <span>Visualización ilustrativa, pendiente de conectar a tus datos.</span>
+            </div>
+        </article>
+
+        <article class="panel accounts-panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">DISTRIBUCIÓN</p>
+                    <h2>Tus cuentas</h2>
+                    <p class="panel-description">Dónde está tu dinero</p>
+                </div>
+                <span class="account-count">03</span>
+            </div>
+
+            <div class="account-list">
+                <div class="account-row">
+                    <div class="account-symbol account-cash">$</div>
+                    <div class="account-info">
+                        <span class="account-name">Efectivo</span>
+                        <span class="account-subtitle">Disponible</span>
+                    </div>
+                    <div class="account-amount">
+                        <strong>$ 325,50</strong>
+                        <span>3,9 %</span>
+                    </div>
+                </div>
+
+                <div class="account-row">
+                    <div class="account-symbol account-bank">▤</div>
+                    <div class="account-info">
+                        <span class="account-name">Cuenta bancaria</span>
+                        <span class="account-subtitle">Cuenta corriente</span>
+                    </div>
+                    <div class="account-amount">
+                        <strong>$ 2.100,00</strong>
+                        <span>24,9 %</span>
+                    </div>
+                </div>
+
+                <div class="account-row">
+                    <div class="account-symbol account-savings">◇</div>
+                    <div class="account-info">
+                        <span class="account-name">Ahorros</span>
+                        <span class="account-subtitle">Reserva personal</span>
+                    </div>
+                    <div class="account-amount">
+                        <strong>$ 6.000,00</strong>
+                        <span>71,2 %</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="account-total">
+                <span>Saldo consolidado</span>
+                <strong>$ 8.425,50</strong>
+            </div>
+        </article>
+    </section>
+
+    <section class="panel transactions-panel">
+        <div class="panel-heading transactions-heading">
+            <div>
+                <p class="eyebrow">ACTIVIDAD RECIENTE</p>
+                <h2>Últimos movimientos</h2>
+                <p class="panel-description">
+                    Una muestra de cómo se verá tu actividad financiera.
+                </p>
+            </div>
+            <span class="period-chip">Datos de ejemplo</span>
+        </div>
+
+        <div class="table-scroll">
+            <table class="transactions-table">
+                <thead>
+                    <tr>
+                        <th scope="col">MOVIMIENTO</th>
+                        <th scope="col">CATEGORÍA</th>
+                        <th scope="col">FECHA</th>
+                        <th scope="col">CUENTA</th>
+                        <th scope="col" class="amount-column">IMPORTE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="transaction-name">
+                                <span class="transaction-symbol symbol-income">↓</span>
+                                <span>
+                                    <strong>Pago mensual</strong>
+                                    <small>Ingreso recibido</small>
+                                </span>
+                            </div>
+                        </td>
+                        <td><span class="category-label">Salario</span></td>
+                        <td class="date-cell">24 oct 2026</td>
+                        <td class="account-cell">Banco</td>
+                        <td class="amount-column amount-positive">+$ 2.200,00</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="transaction-name">
+                                <span class="transaction-symbol symbol-expense">↑</span>
+                                <span>
+                                    <strong>Supermercado</strong>
+                                    <small>Compra cotidiana</small>
+                                </span>
+                            </div>
+                        </td>
+                        <td><span class="category-label">Alimentación</span></td>
+                        <td class="date-cell">23 oct 2026</td>
+                        <td class="account-cell">Efectivo</td>
+                        <td class="amount-column amount-negative">−$ 48,60</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="transaction-name">
+                                <span class="transaction-symbol symbol-expense">↑</span>
+                                <span>
+                                    <strong>Servicio de internet</strong>
+                                    <small>Pago recurrente</small>
+                                </span>
+                            </div>
+                        </td>
+                        <td><span class="category-label">Servicios</span></td>
+                        <td class="date-cell">21 oct 2026</td>
+                        <td class="account-cell">Banco</td>
+                        <td class="amount-column amount-negative">−$ 32,00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</section>
+{% endblock %}
