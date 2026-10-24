@@ -238,6 +238,109 @@ def get_month_summary(month_key):
     return row["income"], row["expense"]
 
 
+def get_monthly_cash_flow(today=None):
+    """Obtiene ingresos y gastos de los últimos seis meses.
+
+    Incluye el mes actual, incluso si todavía no tiene movimientos.
+    Las transferencias no se consideran ingresos ni gastos.
+    """
+    if today is None:
+        today = date.today()
+
+    # Convertir año y mes a un índice para calcular los seis meses
+    # sin errores cuando el período cruza de diciembre a enero.
+    current_month_index = today.year * 12 + today.month - 1
+    first_month_index = current_month_index - 5
+
+    start_year = first_month_index // 12
+    start_month = first_month_index % 12 + 1
+    start_date = date(start_year, start_month, 1)
+
+    next_month_index = current_month_index + 1
+    end_year = next_month_index // 12
+    end_month = next_month_index % 12 + 1
+    end_date = date(end_year, end_month, 1)
+
+    connection = get_db_connection()
+
+    try:
+        rows = connection.execute(
+            """
+            SELECT
+                strftime('%Y-%m', transaction_date) AS month,
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN transaction_type = 'income' THEN amount
+                            ELSE 0
+                        END
+                    ), 0
+                ) AS income,
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN transaction_type = 'expense' THEN amount
+                            ELSE 0
+                        END
+                    ), 0
+                ) AS expense
+            FROM transactions
+            WHERE transaction_date >= ?
+              AND transaction_date < ?
+              AND transaction_type IN ('income', 'expense')
+            GROUP BY strftime('%Y-%m', transaction_date)
+            """,
+            (start_date.isoformat(), end_date.isoformat()),
+        ).fetchall()
+    finally:
+        connection.close()
+
+    # Indexar los resultados para localizar cada mes fácilmente.
+    monthly_totals = {
+        row["month"]: {
+            "income": float(row["income"]),
+            "expense": float(row["expense"]),
+        }
+        for row in rows
+    }
+
+    # Crear los seis meses, incluidos los que no tengan movimientos.
+    months = []
+
+    for offset in range(6):
+        month_index = first_month_index + offset
+        year = month_index // 12
+        month_number = month_index % 12 + 1
+        month_key = f"{year:04d}-{month_number:02d}"
+
+        totals = monthly_totals.get(
+            month_key,
+            {"income": 0.0, "expense": 0.0},
+        )
+
+        months.append({
+            "month": MONTHS_ES[month_number - 1],
+            "income": totals["income"],
+            "expense": totals["expense"],
+            "is_current": month_key == today.strftime("%Y-%m"),
+        })
+
+    # Usar una misma escala para comparar ingresos y gastos.
+    maximum = max(
+        (max(month["income"], month["expense"]) for month in months),
+        default=0,
+    )
+
+    for month in months:
+        if maximum > 0:
+            month["income_height"] = month["income"] / maximum * 100
+            month["expense_height"] = month["expense"] / maximum * 100
+        else:
+            month["income_height"] = 0
+            month["expense_height"] = 0
+
+    return months
+
 # ---------------------------------------------------------------
 # Validación de formularios
 # ---------------------------------------------------------------
@@ -374,6 +477,7 @@ def home():
         month_net=month_net,
         savings_rate=savings_rate,
         recent_transactions=get_transactions(limit=5),
+        monthly_cash_flow=get_monthly_cash_flow(today),
     )
 
 
