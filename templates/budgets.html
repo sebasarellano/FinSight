@@ -123,6 +123,7 @@
                         <th scope="col" class="amount-column">GASTADO</th>
                         <th scope="col" class="amount-column">DISPONIBLE</th>
                         <th scope="col">USO</th>
+                        <th scope="col" class="actions-column">ACCIONES</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -171,6 +172,21 @@
                                         {% endif %}
                                     </span>
                                 </div>
+                            </div>
+                        </td>
+
+                        <td class="actions-column">
+                            <div class="row-actions">
+                                {# Eliminar es POST; confirm() pide confirmación antes de enviar #}
+                                <form method="POST"
+                                      action="{{ url_for('delete_budget', budget_id=budget['id']) }}"
+                                      onsubmit="return confirm('¿Eliminar este presupuesto? Los movimientos no se verán afectados.');">
+                                    <button class="button button-danger button-small"
+                                            type="submit"
+                                            aria-label="Eliminar presupuesto de {{ budget['category'] }}">
+                                        Eliminar
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>

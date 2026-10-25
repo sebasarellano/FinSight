@@ -971,7 +971,42 @@ def budgets():
         selected_month=selected_month,
         warning_percent=BUDGET_WARNING_PERCENT,
     )
+# Eliminar solo acepta POST, igual que con los movimientos.
+@app.route("/budgets/<int:budget_id>/delete", methods=["POST"])
+def delete_budget(budget_id):
+    """Elimina un presupuesto y vuelve al mes al que pertenecía."""
+    connection = get_db_connection()
 
+    try:
+        budget = connection.execute(
+            "SELECT month FROM budgets WHERE id = ?",
+            (budget_id,),
+        ).fetchone()
+
+        if budget is None:
+            flash("El presupuesto ya no existe.", "error")
+            return redirect(url_for("budgets"))
+
+        connection.execute(
+            "DELETE FROM budgets WHERE id = ?",
+            (budget_id,),
+        )
+        connection.commit()
+
+    except Exception:
+        connection.rollback()
+        app.logger.exception("No se pudo eliminar el presupuesto")
+        flash(
+            "No se pudo eliminar el presupuesto. Inténtalo de nuevo.",
+            "error",
+        )
+        return redirect(url_for("budgets"))
+
+    finally:
+        connection.close()
+
+    flash("Presupuesto eliminado correctamente.", "success")
+    return redirect(url_for("budgets", month=budget["month"]))
 
 if __name__ == "__main__":
     app.run(debug=True)
