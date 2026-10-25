@@ -181,6 +181,97 @@
         </article>
     </section>
 
+    <section class="panel category-panel">
+        <div class="panel-heading">
+            <div>
+                <p class="eyebrow">GASTOS</p>
+                <h2>Gastos por categoría</h2>
+                <p class="panel-description">
+                    Distribución de los gastos de
+                    {{ selected_month|month_label }}.
+                    Los ingresos y las transferencias no se incluyen.
+                </p>
+            </div>
+        </div>
+
+        <form method="GET" action="{{ url_for('home') }}"
+              class="movement-form">
+            <div class="form-field">
+                <label for="category_month">Mes del gráfico</label>
+                <input
+                    id="category_month"
+                    name="month"
+                    type="month"
+                    value="{{ selected_month }}"
+                    pattern="\d{4}-(0[1-9]|1[0-2])"
+                    placeholder="AAAA-MM"
+                    required
+                >
+            </div>
+
+            <div class="form-actions">
+                <button class="button button-secondary" type="submit">
+                    Ver mes
+                </button>
+            </div>
+        </form>
+
+        {% if category_breakdown %}
+        <div class="category-breakdown">
+            <div class="category-chart">
+                <canvas id="category-chart" role="img"
+                        aria-label="Gráfico de dona con la distribución de gastos por categoría de {{ selected_month|month_label }}. Los mismos datos están en la tabla contigua.">
+                    Los datos de este gráfico están en la tabla contigua.
+                </canvas>
+            </div>
+
+            <div class="table-scroll">
+                <table class="transactions-table"
+                       aria-label="Gasto por categoría">
+                    <thead>
+                        <tr>
+                            <th scope="col">CATEGORÍA</th>
+                            <th scope="col" class="amount-column">GASTO</th>
+                            <th scope="col" class="amount-column">% DEL TOTAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in category_breakdown %}
+                        <tr>
+                            <td>
+                                <span class="category-swatch"
+                                      style="--swatch: {{ item.color }}"></span>
+                                <span class="category-label">{{ item.category }}</span>
+                            </td>
+                            <td class="amount-column">$ {{ item.total|money }}</td>
+                            <td class="amount-column">{{ item.percent|percent }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th scope="row">Total</th>
+                            <td class="amount-column">
+                                <strong>$ {{ category_breakdown|sum(attribute='total')|money }}</strong>
+                            </td>
+                            <td class="amount-column">{{ 100|percent }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">◔</div>
+            <h3>Sin gastos en este mes</h3>
+            <p>
+                Registra gastos de {{ selected_month|month_label }}
+                para ver su distribución por categoría.
+            </p>
+        </div>
+        {% endif %}
+    </section>
+
     <section class="panel transactions-panel">
         <div class="panel-heading transactions-heading">
             <div>
@@ -250,4 +341,72 @@
     </section>
 
 </section>
+{% endblock %}
+
+{% block scripts %}
+{# Chart.js solo se carga si hay gastos que dibujar #}
+{% if category_breakdown %}
+<script src="{{ url_for('static', filename='vendor/chartjs/chart.umd.js') }}"></script>
+
+{# Los datos viajan como JSON: tojson los escapa de forma segura #}
+<script type="application/json" id="category-chart-data">{{ category_chart|tojson }}</script>
+
+<script>
+    (function () {
+        var canvas = document.getElementById("category-chart");
+
+        // Si la biblioteca no se cargó, la tabla sigue mostrando los datos.
+        if (!canvas || typeof Chart === "undefined") {
+            return;
+        }
+
+        var chartData = JSON.parse(
+            document.getElementById("category-chart-data").textContent
+        );
+
+        // Mismo formato de dinero que el resto de la aplicación: 1.234,50
+        function money(value) {
+            var parts = value.toFixed(2).split(".");
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            return "$ " + parts.join(",");
+        }
+
+        // Respeta a quien pidió reducir las animaciones en su sistema.
+        var reduceMotion = window.matchMedia(
+            "(prefers-reduced-motion: reduce)"
+        ).matches;
+
+        new Chart(canvas, {
+            type: "doughnut",
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    data: chartData.values,
+                    backgroundColor: chartData.colors,
+                    borderWidth: 0,
+                    borderRadius: 4,
+                    spacing: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: "68%",
+                animation: reduceMotion ? false : { duration: 600 },
+                plugins: {
+                    // La tabla de al lado hace de leyenda.
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return " " + context.label + ": " + money(context.parsed);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    })();
+</script>
+{% endif %}
 {% endblock %}

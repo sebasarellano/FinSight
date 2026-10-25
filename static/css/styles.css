@@ -1584,3 +1584,35 @@ a:focus-visible {
 .sort-link:focus-visible {
     text-decoration: underline;
 }
+
+
+/* Gráfico de gastos por categoría */
+.category-breakdown {
+    display: grid;
+    grid-template-columns: minmax(220px, 320px) 1fr;
+    gap: 2rem;
+    align-items: center;
+    margin-top: 1.5rem;
+}
+
+/* Chart.js necesita un contenedor con altura definida */
+.category-chart {
+    position: relative;
+    height: 280px;
+}
+
+.category-swatch {
+    display: inline-block;
+    width: 0.75rem;
+    height: 0.75rem;
+    margin-right: 0.6rem;
+    border-radius: 50%;
+    vertical-align: middle;
+    background: var(--swatch);
+}
+
+@media (max-width: 800px) {
+    .category-breakdown {
+        grid-template-columns: 1fr;
+    }
+}
