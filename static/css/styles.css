@@ -372,14 +372,18 @@ a:focus-visible {
 }
 
 .breadcrumb-current {
-    color: var(--text-secondary);
+    color: var(--text);
+    font-family: var(--font-accent);
+    font-size: 21px;
+    font-style: italic;
+    line-height: 1;
 }
 
 .topbar-right {
     gap: 17px;
 }
 
-.demo-badge {
+.local-badge {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -391,7 +395,7 @@ a:focus-visible {
     font-size: 10px;
 }
 
-.demo-badge .status-dot {
+.local-badge .status-dot {
     width: 6px;
     height: 6px;
 }
@@ -1215,13 +1219,13 @@ a:focus-visible {
         padding: 0 18px;
     }
 
-    .demo-badge {
+    .local-badge {
         font-size: 0;
         gap: 0;
         padding: 9px;
     }
 
-    .demo-badge .status-dot {
+    .local-badge .status-dot {
         width: 7px;
         height: 7px;
     }
