@@ -19,6 +19,7 @@ FinSight nació con dos objetivos: construir una herramienta útil y visualmente
 - Editar y eliminar movimientos (con confirmación).
 - Validación de los datos en el servidor: importes entre 0,01 y 1.000.000.000 con dos decimales, fechas reales, categorías y cuentas existentes.
 - Exportar todos los movimientos a un archivo CSV (UTF-8, separado por comas), listo para Excel, pandas o R. En Excel con configuración regional en español, usa *Datos → Desde texto/CSV* para que reconozca las columnas.
+- Buscar por descripción, filtrar por tipo, categoría, cuenta y rango de fechas, y ordenar por cualquier columna. La exportación a CSV respeta los filtros activos.
 
 ### Cuentas
 - Consultar las cuentas con su saldo inicial y su saldo actual.
@@ -35,13 +36,13 @@ Las transferencias entre cuentas no cuentan como ingresos ni gastos.
 
 Esta es una primera versión. Lo siguiente **no está incluido** todavía:
 
-- Filtros, búsqueda y ordenamiento de movimientos.
 - Importación de archivos CSV.
 - Distribución de gastos por categoría en el dashboard.
 - Crear o eliminar cuentas desde la interfaz, y crear transferencias (la base de datos ya las contempla).
 - Autenticación: la aplicación es de un solo usuario y solo para uso local. Los formularios no incluyen protección CSRF, por lo que **no debe exponerse a internet ni a una red compartida**.
 - Migraciones de la base de datos: si el esquema cambia en una versión futura, habrá que recrear la base local.
 - Los importes se guardan como números decimales de coma flotante, adecuado para uso personal pero no para contabilidad formal.
+- La búsqueda ignora mayúsculas solo en letras sin tilde (limitación de SQLite): "árbol" no encuentra "ÁRBOL".
 
 ## Tecnologías
 
