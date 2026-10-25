@@ -158,7 +158,7 @@ Primera versión (v0.1.0). Las siguientes versiones están pensadas para incluir
 
 ## Licencia
 
-Proyecto personal de aprendizaje, todavía sin licencia.
+Distribuido bajo la licencia MIT. Consulta el archivo [LICENSE](LICENSE).
 
 ## Autor
 
