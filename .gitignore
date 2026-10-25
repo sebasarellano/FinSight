@@ -11,7 +11,11 @@ __pycache__/
 .env.*
 !.env.example
 
-# Bases de datos locales
+# Datos locales de la aplicación: la base de datos (con los archivos
+# auxiliares de SQLite) y la clave secreta de Flask
+instance/
+
+# Bases de datos locales fuera de instance/
 *.db
 *.sqlite
 *.sqlite3
@@ -25,11 +29,3 @@ htmlcov/
 .vscode/
 .DS_Store
 Thumbs.db
-
-# Bases de datos locales
-instance/*.db
-instance/*.sqlite
-instance/*.sqlite3
-
-# Clave secreta local de Flask
-instance/secret_key
