@@ -1,0 +1,29 @@
+# Ejecuta las pruebas automáticas de FinSight en GitHub.
+name: Tests
+
+# Cuándo se ejecuta: en cada Pull Request y en cada push a main.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  pytest:
+    # Máquina virtual limpia de GitHub con Linux.
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Descarga el código del repositorio en la máquina.
+      - uses: actions/checkout@v6
+
+      # 2. Instala la misma versión de Python que usas en local.
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      # 3. Instala las dependencias del proyecto.
+      - run: python -m pip install -r requirements.txt
+
+      # 4. Ejecuta las pruebas. Si alguna falla, el PR queda en rojo.
+      - run: python -m pytest -v
