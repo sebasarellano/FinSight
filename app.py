@@ -1,5 +1,7 @@
 import math
 import re
+import secrets
+from pathlib import Path
 from datetime import date
 
 from flask import Flask, flash, redirect, render_template, request, url_for
@@ -7,7 +9,23 @@ from flask import Flask, flash, redirect, render_template, request, url_for
 from database import get_db_connection, initialize_database
 
 app = Flask(__name__)
-app.secret_key = "clave-local-de-desarrollo"
+
+# Guardar la clave secreta localmente y reutilizarla entre ejecuciones.
+INSTANCE_FOLDER = Path(__file__).resolve().parent / "instance"
+SECRET_KEY_FILE = INSTANCE_FOLDER / "secret_key"
+
+INSTANCE_FOLDER.mkdir(parents=True, exist_ok=True)
+
+if SECRET_KEY_FILE.exists():
+    secret_key = SECRET_KEY_FILE.read_text(encoding="utf-8").strip()
+else:
+    secret_key = ""
+
+if not secret_key:
+    secret_key = secrets.token_hex(32)
+    SECRET_KEY_FILE.write_text(secret_key, encoding="utf-8")
+
+app.config["SECRET_KEY"] = secret_key
 
 # Asegura que la estructura de la base de datos exista al iniciar.
 initialize_database()
