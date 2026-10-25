@@ -1,149 +1,165 @@
 # FinSight
 
-Aplicación web local para gestionar y analizar las finanzas personales, desarrollada con Python, Flask y SQLite.
+Aplicación web **local** de finanzas personales, desarrollada con Python, Flask y SQLite. Permite registrar movimientos, consultar cuentas y controlar presupuestos mensuales por categoría, sin depender de servicios externos, cuentas de pago ni claves de API.
 
-FinSight permite registrar movimientos financieros, administrar cuentas, visualizar la evolución mensual del dinero y establecer presupuestos por categoría. El proyecto se desarrolla como una aplicación local, sin depender de servicios de pago ni APIs externas.
+FinSight nació con dos objetivos: construir una herramienta útil y visualmente cuidada, y aprender ingeniería de software real con Git y GitHub (ramas, commits, Issues, Pull Requests, pruebas automáticas y releases).
 
-## Objetivos del proyecto
+> **Aviso:** FinSight es un proyecto personal de aprendizaje. Usa **datos ficticios**. No introduzcas información bancaria ni datos financieros sensibles reales.
 
-FinSight tiene dos objetivos principales:
+## Funcionalidades de la versión 0.1.0
 
-- **Desarrollo de producto:** construir una aplicación de finanzas personales funcional, visual y fácil de utilizar.
-- **Aprendizaje de ingeniería de software:** practicar Git y GitHub mediante el control de versiones, ramas, commits, Issues, Pull Requests y documentación.
+### Dashboard
+- Saldo total y saldo de cada cuenta.
+- Ingresos, gastos y ahorro neto del mes actual.
+- Gráfico de barras con los ingresos y gastos de los últimos seis meses.
+- Últimos movimientos registrados.
 
-## Funcionalidades
+### Movimientos
+- Registrar ingresos y gastos con descripción, importe, categoría, fecha y cuenta.
+- Editar y eliminar movimientos (con confirmación).
+- Validación de los datos en el servidor: importes entre 0,01 y 1.000.000.000 con dos decimales, fechas reales, categorías y cuentas existentes.
 
-### Dashboard financiero
-- Resumen de ingresos, gastos, saldo y ahorro neto.
-- Gráfico de flujo mensual de ingresos y gastos.
-- Actualización de los indicadores a partir de los movimientos registrados.
-
-### Gestión de movimientos
-- Registrar ingresos y gastos.
-- Editar y eliminar movimientos.
-- Consultar y organizar los movimientos mediante las opciones disponibles en la interfaz.
-- Clasificar los movimientos por categoría.
-
-### Gestión de cuentas
-- Consultar las cuentas y sus saldos calculados.
-- Editar la información de las cuentas existentes.
-- Gestionar saldos iniciales, incluidos saldos negativos.
+### Cuentas
+- Consultar las cuentas con su saldo inicial y su saldo actual.
+- Editar nombre, tipo y saldo inicial (se admiten saldos negativos para deudas).
 
 ### Presupuestos
-- Definir límites de gasto por categoría y mes.
-- Actualizar el importe de un presupuesto existente.
-- Consultar el importe gastado, el disponible y el porcentaje utilizado.
-- Visualizar indicadores de seguimiento según el nivel de uso del presupuesto.
+- Definir un límite mensual por categoría de gasto.
+- Ver lo gastado, lo disponible y el porcentaje de uso, con aviso visual al llegar al 80 % y al superar el 100 %.
+- Actualizar un presupuesto volviendo a guardarlo para la misma categoría y mes, o eliminarlo.
 
-Los presupuestos se calculan por categoría y mes. Las transferencias no se contabilizan como gastos en los resúmenes ni en el seguimiento presupuestario.
+Las transferencias entre cuentas no cuentan como ingresos ni gastos.
+
+## Limitaciones conocidas
+
+Esta es una primera versión. Lo siguiente **no está incluido** todavía:
+
+- Filtros, búsqueda y ordenamiento de movimientos.
+- Importación y exportación de archivos CSV.
+- Distribución de gastos por categoría en el dashboard.
+- Crear o eliminar cuentas desde la interfaz, y crear transferencias (la base de datos ya las contempla).
+- Autenticación: la aplicación es de un solo usuario y solo para uso local. Los formularios no incluyen protección CSRF, por lo que **no debe exponerse a internet ni a una red compartida**.
+- Migraciones de la base de datos: si el esquema cambia en una versión futura, habrá que recrear la base local.
+- Los importes se guardan como números decimales de coma flotante, adecuado para uso personal pero no para contabilidad formal.
 
 ## Tecnologías
 
-- **Python 3.11:** lenguaje de programación.
-- **Flask:** framework para la aplicación web.
-- **SQLite:** base de datos relacional local.
-- **HTML y CSS:** estructura, estilos y visualizaciones del dashboard.
-- **Git y GitHub:** control de versiones y gestión del desarrollo.
-- **pytest:** herramienta declarada para pruebas automatizadas.
+- **Python 3.11**
+- **Flask**: framework web.
+- **SQLite**: base de datos local, incluida en Python.
+- **HTML y CSS**: interfaz y visualizaciones.
+- **pytest**: pruebas automáticas.
+- **GitHub Actions**: ejecuta las pruebas en cada Pull Request.
 
 ## Requisitos
 
-Para ejecutar FinSight necesitas:
-
-- Windows.
-- Python 3.11 o una versión compatible.
+- Windows (probado en Windows con PowerShell y Visual Studio Code).
+- Python 3.11 o superior.
 - Git.
 - Un navegador web moderno.
-
-No se necesita contratar hosting ni configurar un servidor externo.
 
 ## Instalación y ejecución
 
 ### 1. Clonar el repositorio
-
-Si todavía no tienes una copia local del proyecto, ejecuta:
 
 ```powershell
 git clone https://github.com/sebasarellano/FinSight.git
 cd FinSight
 ```
 
-Si ya tienes el proyecto en tu equipo, abre su carpeta en VS Code y continúa con el siguiente paso.
-
-### 2. Crear un entorno virtual
+### 2. Crear y activar un entorno virtual
 
 ```powershell
 python -m venv .venv
-```
-
-### 3. Activar el entorno virtual
-
-En PowerShell:
-
-```powershell
 .\.venv\Scripts\Activate.ps1
 ```
 
-Si PowerShell bloquea la ejecución del script de activación, puedes utilizar el mecanismo de activación apropiado para tu configuración de Windows o consultar la documentación oficial de Python.
+Si PowerShell muestra un error de ejecución de scripts, permite los scripts firmados localmente para tu usuario y vuelve a activar:
 
-### 4. Instalar las dependencias
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+.\.venv\Scripts\Activate.ps1
+```
+
+Alternativa sin cambiar ninguna política: usa el Símbolo del sistema (CMD) y ejecuta `.venv\Scripts\activate.bat`.
+
+Sabrás que el entorno está activo porque verás `(.venv)` al inicio de la línea de la terminal.
+
+### 3. Instalar las dependencias
 
 ```powershell
 python -m pip install -r requirements.txt
 ```
 
-### 5. Ejecutar la aplicación
+### 4. Ejecutar la aplicación
 
 ```powershell
 python app.py
 ```
 
-Abre la siguiente dirección en tu navegador:
+Abre <http://127.0.0.1:5000> en tu navegador. Para detener la aplicación, vuelve a la terminal y pulsa `Ctrl + C`.
 
-http://127.0.0.1:5000
+La primera vez que se ejecuta, FinSight crea automáticamente la carpeta `instance/` con la base de datos y tres cuentas de ejemplo (Efectivo, Cuenta bancaria y Ahorros).
 
-Para detener la aplicación, vuelve a la terminal y presiona `Ctrl + C`.
+> `python app.py` inicia el servidor de desarrollo de Flask con el modo de depuración activado. Es adecuado para uso local, pero no para exponerlo en una red.
+
+## Pruebas automáticas
+
+Con el entorno virtual activado:
+
+```powershell
+python -m pytest -v
+```
+
+Las pruebas usan una base de datos temporal, así que nunca modifican tus datos locales. GitHub Actions las ejecuta en cada Pull Request y en cada cambio a `main`.
 
 ## Estructura del proyecto
 
 ```text
 FinSight/
-├── app.py                  # Aplicación Flask y rutas
-├── database.py             # Gestión del esquema de SQLite
-├── requirements.txt        # Dependencias de Python
-├── README.md               # Documentación del proyecto
-├── .gitignore              # Archivos excluidos de Git
-├── instance/
-│   └── finsight.db         # Base de datos local
-├── templates/
-│   ├── base.html           # Plantilla base
-│   ├── dashboard.html      # Dashboard financiero
-│   ├── transactions.html   # Gestión de movimientos
+├── app.py                      # Aplicación Flask: rutas, validación y cálculos
+├── database.py                 # Conexión y esquema de SQLite
+├── requirements.txt            # Dependencias de Python
+├── pytest.ini                  # Configuración de pytest
+├── README.md                   # Esta documentación
+├── .gitignore                  # Archivos excluidos de Git
+├── .github/
+│   └── workflows/
+│       └── tests.yml           # Pruebas automáticas en GitHub Actions
+├── templates/                  # Plantillas HTML (Jinja2)
+│   ├── base.html
+│   ├── dashboard.html
+│   ├── transactions.html
 │   ├── edit_transaction.html
-│   ├── accounts.html       # Gestión de cuentas
+│   ├── accounts.html
 │   ├── edit_account.html
-│   └── budgets.html        # Gestión de presupuestos
-└── static/
-    └── css/
-        └── styles.css      # Estilos de la interfaz
+│   └── budgets.html
+├── static/
+│   └── css/
+│       └── styles.css          # Estilos de la interfaz
+└── tests/
+    ├── conftest.py             # Preparación común: base de datos temporal
+    ├── test_transactions.py    # Pruebas de movimientos y saldos
+    └── test_budgets.py         # Pruebas de presupuestos
 ```
 
-## Base de datos y datos de ejemplo
+La carpeta `instance/` se crea al ejecutar la aplicación y **no se incluye en el repositorio**.
 
-FinSight utiliza SQLite para almacenar la información localmente. La base de datos se encuentra en `instance/finsight.db` y está excluida del control de versiones mediante `.gitignore`.
+## Seguridad y datos locales
 
-La versión actual utiliza datos ficticios. No introduzcas información financiera sensible en esta versión sin revisar previamente las medidas de seguridad y respaldo.
-
-La base de datos local no se incluye en el repositorio. Al ejecutar la aplicación, se inicializa el esquema necesario y se crean las cuentas de ejemplo cuando corresponde. La aplicación no incluye un mecanismo automático de migración para modificar la estructura de tablas existentes.
+- La base de datos está en `instance/finsight.db`.
+- La clave secreta de Flask se genera al azar la primera vez y se guarda en `instance/secret_key`.
+- Ambos archivos están excluidos de Git mediante `.gitignore`. Nunca los subas al repositorio.
+- Si una clave o dato sensible llegara a subirse a GitHub, añadirlo después a `.gitignore` **no lo elimina del historial**: habría que tratarlo como comprometido y reemplazarlo.
 
 ## Estado del proyecto
 
-FinSight se encuentra en desarrollo. La versión inicial se centra en las funcionalidades principales de seguimiento financiero y en el aprendizaje progresivo de herramientas de desarrollo.
+Primera versión (v0.1.0). Las siguientes versiones están pensadas para incluir filtros y búsqueda, importación y exportación CSV, gráficos por categoría y una interfaz más cuidada.
 
-Las funcionalidades futuras se incorporarán a medida que se implementen y validen.
+## Licencia
+
+Proyecto personal de aprendizaje, todavía sin licencia.
 
 ## Autor
 
 Sebastián Arellano
-
-Desarrollado como proyecto personal de aprendizaje en programación, análisis de datos y gestión de versiones con Git y GitHub.
