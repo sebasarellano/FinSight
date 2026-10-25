@@ -13,6 +13,9 @@
     >
 </head>
 <body>
+    {# Enlace para saltar la navegación: solo se ve al enfocarlo con el teclado #}
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
     {# Sección activa de la barra lateral: las páginas de edición cuentan como su sección #}
     {% set in_transactions = request.endpoint in ('transactions', 'edit_transaction') %}
     {% set in_budgets = request.endpoint == 'budgets' %}
@@ -79,7 +82,7 @@
             </div>
         </aside>
 
-        <main class="main-content">
+        <main class="main-content" id="contenido" tabindex="-1">
             <header class="topbar">
                 <div class="breadcrumb">
                     <a href="{{ url_for('home') }}">FinSight</a>

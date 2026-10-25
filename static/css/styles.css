@@ -1713,3 +1713,29 @@ a:focus-visible {
         grid-template-columns: 1fr;
     }
 }
+
+/* Accesibilidad: enlace para saltar la navegación.
+   Queda fuera de pantalla y aparece solo al recibir el foco con Tab. */
+.skip-link {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 100;
+    padding: 10px 18px;
+    color: var(--on-button);
+    background: var(--button-bg);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    transform: translateY(-200%);
+    transition: transform 160ms ease;
+}
+
+.skip-link:focus-visible {
+    transform: translateY(0);
+}
+
+/* El contenido recibe el foco al saltar, pero no necesita un contorno. */
+.main-content:focus {
+    outline: none;
+}
