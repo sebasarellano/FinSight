@@ -24,3 +24,25 @@ def client(tmp_path, monkeypatch):
 
     with flask_app.test_client() as test_client:
         yield test_client
+
+
+@pytest.fixture
+def add_transaction(client):
+    """Devuelve una función que registra un movimiento válido.
+
+    Cada prueba indica solo los campos que quiere cambiar.
+    """
+
+    def _add(**changes):
+        form = {
+            "description": "Almuerzo de prueba",
+            "amount": "10.50",
+            "transaction_type": "expense",
+            "category": "Alimentación",
+            "transaction_date": "2026-10-24",
+            "account_id": "1",
+        }
+        form.update(changes)
+        client.post("/transactions", data=form)
+
+    return _add

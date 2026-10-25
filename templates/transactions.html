@@ -111,30 +111,175 @@
         <div class="panel-heading transactions-heading">
             <div>
                 <p class="eyebrow">HISTORIAL</p>
-                <h2>Todos los movimientos</h2>
+                <h2>
+                    {% if filters_active %}
+                        Movimientos filtrados
+                    {% else %}
+                        Todos los movimientos
+                    {% endif %}
+                </h2>
                 <p class="panel-description">
-                    {{ transactions|length }} registro(s) guardado(s).
+                    {% if filters_active %}
+                        {{ transactions|length }} de {{ total_count }}
+                        registro(s).
+                    {% else %}
+                        {{ transactions|length }} registro(s) guardado(s).
+                    {% endif %}
+                    {% if filters['date_from'] and filters['date_to']
+                          and filters['date_from'] > filters['date_to'] %}
+                        La fecha inicial es posterior a la final.
+                    {% endif %}
                 </p>
             </div>
 
             {% if transactions %}
-            <a class="button button-secondary"
-               href="{{ url_for('export_transactions_csv') }}">
+            <a class="button button-secondary" href="{{ export_url }}">
                 Exportar CSV
             </a>
             {% endif %}
         </div>
+
+        {# Filtros: usan GET, así la búsqueda queda en la dirección #}
+        <form method="GET" action="{{ url_for('transactions') }}"
+              class="movement-form">
+
+            <div class="form-field form-field-wide">
+                <label for="filter_q">Buscar en la descripción</label>
+                <input
+                    id="filter_q"
+                    name="q"
+                    type="search"
+                    maxlength="100"
+                    value="{{ filters['q'] }}"
+                    placeholder="Ej. supermercado"
+                >
+            </div>
+
+            <div class="form-field">
+                <label for="filter_type">Tipo</label>
+                <select id="filter_type" name="type">
+                    <option value="">Todos</option>
+                    <option value="income"
+                        {% if filters['type'] == 'income' %}selected{% endif %}>
+                        Ingreso
+                    </option>
+                    <option value="expense"
+                        {% if filters['type'] == 'expense' %}selected{% endif %}>
+                        Gasto
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label for="filter_category">Categoría</label>
+                <select id="filter_category" name="category">
+                    <option value="">Todas</option>
+                    {% for category in categories %}
+                    <option value="{{ category }}"
+                        {% if filters['category'] == category %}selected{% endif %}>
+                        {{ category }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label for="filter_account">Cuenta</label>
+                <select id="filter_account" name="account">
+                    <option value="">Todas</option>
+                    {% for account in accounts %}
+                    <option value="{{ account['id'] }}"
+                        {% if filters['account'] == account['id'] %}selected{% endif %}>
+                        {{ account['name'] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label for="filter_date_from">Desde</label>
+                <input
+                    id="filter_date_from"
+                    name="date_from"
+                    type="date"
+                    value="{{ filters['date_from'] }}"
+                >
+            </div>
+
+            <div class="form-field">
+                <label for="filter_date_to">Hasta</label>
+                <input
+                    id="filter_date_to"
+                    name="date_to"
+                    type="date"
+                    value="{{ filters['date_to'] }}"
+                >
+            </div>
+
+            {# Conserva el orden elegido al aplicar filtros #}
+            {% if custom_sort %}
+            <input type="hidden" name="sort" value="{{ filters['sort'] }}">
+            <input type="hidden" name="order" value="{{ filters['order'] }}">
+            {% endif %}
+
+            <div class="form-actions form-field-wide">
+                {% if filters_active or custom_sort %}
+                <a class="button button-secondary"
+                   href="{{ url_for('transactions') }}">
+                    Limpiar
+                </a>
+                {% endif %}
+                <button class="button button-primary" type="submit">
+                    Aplicar filtros
+                </button>
+            </div>
+        </form>
 
         {% if transactions %}
         <div class="table-scroll">
             <table class="transactions-table">
                 <thead>
                     <tr>
-                        <th scope="col">MOVIMIENTO</th>
-                        <th scope="col">CATEGORÍA</th>
-                        <th scope="col">FECHA</th>
-                        <th scope="col">CUENTA</th>
-                        <th scope="col" class="amount-column">IMPORTE</th>
+                        <th scope="col"
+                            aria-sort="{{ sort_links['description']['aria'] }}">
+                            <a class="sort-link"
+                               href="{{ sort_links['description']['url'] }}">
+                                MOVIMIENTO
+                                <span aria-hidden="true">{{ sort_links['description']['arrow'] }}</span>
+                            </a>
+                        </th>
+                        <th scope="col"
+                            aria-sort="{{ sort_links['category']['aria'] }}">
+                            <a class="sort-link"
+                               href="{{ sort_links['category']['url'] }}">
+                                CATEGORÍA
+                                <span aria-hidden="true">{{ sort_links['category']['arrow'] }}</span>
+                            </a>
+                        </th>
+                        <th scope="col"
+                            aria-sort="{{ sort_links['date']['aria'] }}">
+                            <a class="sort-link"
+                               href="{{ sort_links['date']['url'] }}">
+                                FECHA
+                                <span aria-hidden="true">{{ sort_links['date']['arrow'] }}</span>
+                            </a>
+                        </th>
+                        <th scope="col"
+                            aria-sort="{{ sort_links['account']['aria'] }}">
+                            <a class="sort-link"
+                               href="{{ sort_links['account']['url'] }}">
+                                CUENTA
+                                <span aria-hidden="true">{{ sort_links['account']['arrow'] }}</span>
+                            </a>
+                        </th>
+                        <th scope="col" class="amount-column"
+                            aria-sort="{{ sort_links['amount']['aria'] }}">
+                            <a class="sort-link"
+                               href="{{ sort_links['amount']['url'] }}">
+                                IMPORTE
+                                <span aria-hidden="true">{{ sort_links['amount']['arrow'] }}</span>
+                            </a>
+                        </th>
                         <th scope="col" class="actions-column">ACCIONES</th>
                     </tr>
                 </thead>
@@ -220,6 +365,15 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+        {% elif filters_active %}
+        <div class="empty-state">
+            <div class="empty-state-icon">⌕</div>
+            <h3>Ningún movimiento coincide con los filtros</h3>
+            <p>
+                Prueba con otros criterios o
+                <a href="{{ url_for('transactions') }}">limpia los filtros</a>.
+            </p>
         </div>
         {% else %}
         <div class="empty-state">

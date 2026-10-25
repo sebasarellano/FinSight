@@ -152,11 +152,56 @@ def get_accounts():
         connection.close()
 
 
-def get_transactions(limit=None):
+def get_transactions(limit=None, filters=None):
     """Obtiene los movimientos junto con el nombre de su cuenta.
 
-    Si se indica 'limit', devuelve solo los más recientes.
+    - limit: si se indica, devuelve solo los más recientes.
+    - filters: diccionario limpio de parse_transaction_filters(). Sin
+      filtros, devuelve todo ordenado por fecha descendente.
     """
+    conditions = []
+    parameters = []
+    sort_key = DEFAULT_SORT
+    order = DEFAULT_ORDER
+
+    if filters:
+        sort_key = filters["sort"]
+        order = filters["order"]
+
+        if filters["q"]:
+            # Escapar \, % y _ para buscarlos como texto literal y no
+            # como comodines de LIKE.
+            escaped = (
+                filters["q"]
+                .replace("\\", "\\\\")
+                .replace("%", "\\%")
+                .replace("_", "\\_")
+            )
+            conditions.append(
+                "transactions.description LIKE ? ESCAPE '\\'"
+            )
+            parameters.append(f"%{escaped}%")
+
+        if filters["type"]:
+            conditions.append("transactions.transaction_type = ?")
+            parameters.append(filters["type"])
+
+        if filters["category"]:
+            conditions.append("transactions.category = ?")
+            parameters.append(filters["category"])
+
+        if filters["account"]:
+            conditions.append("transactions.account_id = ?")
+            parameters.append(filters["account"])
+
+        if filters["date_from"]:
+            conditions.append("transactions.transaction_date >= ?")
+            parameters.append(filters["date_from"])
+
+        if filters["date_to"]:
+            conditions.append("transactions.transaction_date <= ?")
+            parameters.append(filters["date_to"])
+
     query = """
         SELECT
             transactions.id,
@@ -169,20 +214,39 @@ def get_transactions(limit=None):
         FROM transactions
         JOIN accounts
             ON transactions.account_id = accounts.id
-        ORDER BY
-            transactions.transaction_date DESC,
-            transactions.id DESC
     """
-    parameters = ()
+
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+
+    # Seguro: sort_key y direction solo toman valores de una lista
+    # blanca, nunca texto escrito por el usuario.
+    direction = "ASC" if order == "asc" else "DESC"
+    query += (
+        f" ORDER BY {SORT_COLUMNS[sort_key]} {direction},"
+        f" transactions.id {direction}"
+    )
 
     if limit is not None:
         query += " LIMIT ?"
-        parameters = (limit,)
+        parameters.append(limit)
 
     connection = get_db_connection()
 
     try:
         return connection.execute(query, parameters).fetchall()
+    finally:
+        connection.close()
+
+
+def get_transaction_count():
+    """Cuenta todos los movimientos guardados, sin aplicar filtros."""
+    connection = get_db_connection()
+
+    try:
+        return connection.execute(
+            "SELECT COUNT(*) FROM transactions"
+        ).fetchone()[0]
     finally:
         connection.close()
 
@@ -613,6 +677,128 @@ def parse_budget_form(form):
     }
     return values, None
 
+# ---------------------------------------------------------------
+# Filtros, búsqueda y ordenamiento de movimientos
+# ---------------------------------------------------------------
+
+# Columnas por las que se puede ordenar. El valor que llega en la
+# dirección (?sort=...) solo se usa como clave de este diccionario.
+SORT_COLUMNS = {
+    "date": "transactions.transaction_date",
+    "description": "transactions.description COLLATE NOCASE",
+    "category": "transactions.category",
+    "account": "accounts.name COLLATE NOCASE",
+    "amount": "transactions.amount",
+}
+DEFAULT_SORT = "date"
+DEFAULT_ORDER = "desc"
+
+
+def parse_transaction_filters(args):
+    """Lee y limpia los filtros de la dirección (?q=...&type=...).
+
+    'args' puede ser request.args o un diccionario normal. Todo valor
+    inválido se ignora en lugar de dar error: una dirección escrita a
+    mano o guardada de una versión anterior nunca debe romper la página.
+    """
+    filters = {
+        "q": args.get("q", "").strip()[:100],
+        "type": args.get("type", "").strip(),
+        "category": args.get("category", "").strip(),
+        "account": None,
+        "date_from": "",
+        "date_to": "",
+        "sort": args.get("sort", "").strip(),
+        "order": args.get("order", "").strip(),
+    }
+
+    if filters["type"] not in ("income", "expense"):
+        filters["type"] = ""
+
+    if filters["category"] not in CATEGORIES:
+        filters["category"] = ""
+
+    try:
+        account_id = int(args.get("account", "").strip())
+    except ValueError:
+        account_id = 0
+
+    # El tope evita números enormes que SQLite no puede manejar.
+    if 0 < account_id < 1_000_000_000:
+        filters["account"] = account_id
+
+    for key in ("date_from", "date_to"):
+        try:
+            filters[key] = date.fromisoformat(
+                args.get(key, "").strip()
+            ).isoformat()
+        except ValueError:
+            filters[key] = ""
+
+    if filters["sort"] not in SORT_COLUMNS:
+        filters["sort"] = DEFAULT_SORT
+
+    if filters["order"] not in ("asc", "desc"):
+        filters["order"] = DEFAULT_ORDER
+
+    return filters
+
+
+def filters_to_query(filters, include_sort=True):
+    """Devuelve solo los filtros activos, listos para armar un enlace.
+
+    El orden por defecto (fecha descendente) no se incluye: así las
+    direcciones quedan limpias cuando no hay nada que recordar.
+    """
+    query = {}
+
+    for key in ("q", "type", "category", "date_from", "date_to"):
+        if filters[key]:
+            query[key] = filters[key]
+
+    if filters["account"]:
+        query["account"] = filters["account"]
+
+    is_default_sort = (
+        filters["sort"] == DEFAULT_SORT and filters["order"] == DEFAULT_ORDER
+    )
+
+    if include_sort and not is_default_sort:
+        query["sort"] = filters["sort"]
+        query["order"] = filters["order"]
+
+    return query
+
+
+def build_sort_links(filters):
+    """Prepara el enlace y el indicador de cada encabezado ordenable.
+
+    Un clic en una columna nueva la ordena (texto de A a Z; fecha e
+    importe de mayor a menor); otro clic en la misma invierte el orden.
+    """
+    links = {}
+
+    for key in SORT_COLUMNS:
+        if filters["sort"] == key:
+            current = filters["order"]
+            next_order = "asc" if current == "desc" else "desc"
+        else:
+            current = None
+            next_order = "desc" if key in ("date", "amount") else "asc"
+
+        query = filters_to_query(filters, include_sort=False)
+        query["sort"] = key
+        query["order"] = next_order
+
+        links[key] = {
+            "url": url_for("transactions", **query),
+            "aria": {"asc": "ascending", "desc": "descending"}.get(
+                current, "none"
+            ),
+            "arrow": {"asc": "↑", "desc": "↓"}.get(current, ""),
+        }
+
+    return links
 
 # ---------------------------------------------------------------
 # Rutas
@@ -805,12 +991,21 @@ def transactions():
         flash("Movimiento registrado correctamente.", "success")
         return redirect(url_for("transactions"))
 
+    filters = parse_transaction_filters(request.args)
+    query = filters_to_query(filters)
+
     return render_template(
         "transactions.html",
-        transactions=get_transactions(),
+        transactions=get_transactions(filters=filters),
+        total_count=get_transaction_count(),
         accounts=get_accounts(),
         categories=CATEGORIES,
         today=date.today().isoformat(),
+        filters=filters,
+        filters_active=bool(filters_to_query(filters, include_sort=False)),
+        custom_sort="sort" in query,
+        sort_links=build_sort_links(filters),
+        export_url=url_for("export_transactions_csv", **query),
     )
 
 
@@ -1067,9 +1262,12 @@ def build_transactions_csv(transactions):
 
 @app.route("/transactions/export.csv")
 def export_transactions_csv():
-    """Descarga todos los movimientos como archivo CSV."""
-    content = build_transactions_csv(get_transactions())
-    filename = f"finsight-movimientos-{date.today().isoformat()}.csv"
+    """Descarga los movimientos como CSV, respetando los filtros activos."""
+    filters = parse_transaction_filters(request.args)
+    content = build_transactions_csv(get_transactions(filters=filters))
+
+    suffix = "-filtrado" if filters_to_query(filters, False) else ""
+    filename = f"finsight-movimientos{suffix}-{date.today().isoformat()}.csv"
 
     # 'utf-8-sig' añade una marca al inicio (BOM) para que Excel
     # reconozca la codificación y muestre bien las tildes.
