@@ -1,35 +1,131 @@
+/* =====================================================================
+   FinSight · hoja de estilos
+   ---------------------------------------------------------------------
+   1. Fuentes locales (licencia SIL OFL, en static/vendor/fonts/)
+   2. Variables de diseño (:root): TODOS los colores viven aquí.
+      El resto del archivo solo usa esas variables.
+   ===================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+/* Texto corrido y cifras pequeñas: Bricolage Grotesque, corte de 12 pt */
+@font-face {
+    font-family: "Bricolage Text";
+    src: url("../vendor/fonts/bricolage/BricolageGrotesque12pt-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Bricolage Text";
+    src: url("../vendor/fonts/bricolage/BricolageGrotesque12pt-SemiBold.woff2") format("woff2");
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Titulares y cifras grandes: Bricolage Grotesque, corte de 96 pt */
+@font-face {
+    font-family: "Bricolage Display";
+    src: url("../vendor/fonts/bricolage/BricolageGrotesque96pt-Bold.woff2") format("woff2");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Bricolage Display";
+    src: url("../vendor/fonts/bricolage/BricolageGrotesque96pt-ExtraBold.woff2") format("woff2");
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Acento editorial: una palabra en cursiva con serifa dentro de un titular */
+@font-face {
+    font-family: "Instrument Serif";
+    src: url("../vendor/fonts/instrument-serif/InstrumentSerif-Italic.woff2") format("woff2");
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
 
 :root {
     color-scheme: dark;
 
-    --bg: #101310;
-    --sidebar: #121512;
-    --surface: #171b17;
-    --surface-raised: #1c211c;
-    --surface-hover: #232923;
+    /* Superficies: negro azulado, de la más profunda a la más elevada */
+    --bg: #090c12;
+    --bg-glass: rgba(9, 12, 18, 0.88);
+    --sidebar: #0b0f16;
+    --surface: #10151e;
+    --surface-raised: #161c27;
+    --surface-hover: #1c2431;
+    --surface-head: #131925;
 
-    --border: #292f29;
-    --border-soft: #222722;
+    --border: #232c3a;
+    --border-soft: #19212d;
+    --border-strong: #35435a;
 
-    --text: #edf0e9;
-    --text-secondary: #a1a99e;
-    --text-muted: #6e776b;
+    /* Texto (sobre superficies oscuras) */
+    --text: #e9eef6;
+    --text-secondary: #a3afc0;
+    --text-muted: #8190a5;
+    --text-faint: #4a586d; /* solo decoración: separadores, no texto legible */
 
-    --green: #b5ef78;
-    --green-strong: #8bdc4e;
-    --green-soft: rgba(181, 239, 120, 0.10);
+    /* Acento de marca: azul hielo */
+    --accent: #8fb4ff;
+    --accent-soft: rgba(143, 180, 255, 0.10);
+    --accent-line: rgba(143, 180, 255, 0.22);
+    --on-accent: #07101f;
 
-    --red: #e6a19a;
-    --blue: #9dbbe5;
+    /* Botón principal: blanco azulado */
+    --button-bg: #e8eefb;
+    --on-button: #0a1020;
 
+    /* Panel principal: bloque cobalto a sangre */
+    --hero-from: #1633c4;
+    --hero-mid: #10267f;
+    --hero-to: #0b1a5c;
+    --hero-border: #2d49cf;
+    --hero-glow: rgba(143, 180, 255, 0.30);
+    --hero-line: rgba(255, 255, 255, 0.16);
+    --hero-ring: rgba(255, 255, 255, 0.09);
+    --hero-chip: rgba(255, 255, 255, 0.12);
+    --on-hero: #f4f7ff;
+    --on-hero-soft: #d0dbff;
+    --on-hero-muted: #b9c6f7;
+
+    /* Significado financiero: nunca depende solo del color */
+    --income: #5fe3b4;
+    --income-deep: #2fae85;
+    --income-soft: rgba(95, 227, 180, 0.10);
+    --income-line: rgba(95, 227, 180, 0.35);
+    --income-glow: rgba(95, 227, 180, 0.22);
+
+    --expense: #ff9b8e;
+    --expense-bar: #d9776d;
+    --expense-soft: rgba(255, 155, 142, 0.10);
+    --expense-line: rgba(255, 155, 142, 0.35);
+
+    --warning: #f0c05a;
+    --danger: #ff7a72;
+    --violet: #b9a6f5;
+    --violet-soft: rgba(185, 166, 245, 0.10);
+
+    /* Elementos translúcidos neutros (botón secundario, barras de progreso) */
+    --ghost-line: rgba(255, 255, 255, 0.18);
+    --ghost-line-hover: rgba(255, 255, 255, 0.32);
+    --ghost-fill: rgba(255, 255, 255, 0.07);
+    --track: rgba(255, 255, 255, 0.08);
+
+    /* Formas (se renovarán en el PR de componentes) */
     --radius-sm: 10px;
     --radius-md: 15px;
     --radius-lg: 20px;
 
-    --font-body: "DM Sans", sans-serif;
-    --font-heading: "Manrope", sans-serif;
+    /* Tipografía */
+    --font-body: "Bricolage Text", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-heading: "Bricolage Display", "Bricolage Text", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-accent: "Instrument Serif", Georgia, "Times New Roman", serif;
 }
 
 * {
@@ -68,7 +164,7 @@ a {
 
 button:focus-visible,
 a:focus-visible {
-    outline: 2px solid var(--green);
+    outline: 2px solid var(--accent);
     outline-offset: 4px;
 }
 
@@ -102,8 +198,8 @@ a:focus-visible {
     height: 34px;
     place-items: center;
     border-radius: 11px;
-    color: #10170b;
-    background: var(--green);
+    color: var(--on-accent);
+    background: var(--accent);
     font-family: var(--font-heading);
     font-size: 19px;
     font-weight: 800;
@@ -118,7 +214,7 @@ a:focus-visible {
 
 .brand-period,
 .heading-period {
-    color: var(--green);
+    color: var(--accent);
 }
 
 .sidebar-label,
@@ -160,9 +256,9 @@ a:focus-visible {
 }
 
 .nav-link.active {
-    color: var(--green);
-    background: var(--green-soft);
-    border-color: rgba(181, 239, 120, 0.09);
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-color: var(--accent-line);
 }
 
 .nav-link[aria-disabled="true"] {
@@ -205,8 +301,8 @@ a:focus-visible {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: var(--green-strong);
-    box-shadow: 0 0 9px rgba(139, 220, 78, 0.22);
+    background: var(--income);
+    box-shadow: 0 0 9px var(--income-glow);
 }
 
 .sidebar-version {
@@ -230,7 +326,7 @@ a:focus-visible {
     justify-content: space-between;
     min-height: 68px;
     padding: 0 42px;
-    background: rgba(16, 19, 16, 0.92);
+    background: var(--bg-glass);
     border-bottom: 1px solid var(--border-soft);
     backdrop-filter: blur(16px);
 }
@@ -248,7 +344,7 @@ a:focus-visible {
 }
 
 .breadcrumb-separator {
-    color: #454d43;
+    color: var(--text-faint);
 }
 
 .breadcrumb-current {
@@ -282,8 +378,8 @@ a:focus-visible {
     height: 33px;
     place-items: center;
     color: var(--text);
-    background: #30382e;
-    border: 1px solid #414a3c;
+    background: var(--surface-raised);
+    border: 1px solid var(--border-strong);
     border-radius: 50%;
     font-size: 12px;
     font-weight: 700;
@@ -338,8 +434,8 @@ a:focus-visible {
 }
 
 .button-primary {
-    color: #15200d;
-    background: var(--green);
+    color: var(--on-button);
+    background: var(--button-bg);
 }
 
 .button-primary:disabled {
@@ -358,9 +454,10 @@ a:focus-visible {
     overflow: hidden;
     padding: 26px 29px 20px;
     background:
-        radial-gradient(ellipse at 95% 10%, rgba(181, 239, 120, 0.09), transparent 38%),
-        linear-gradient(112deg, #1b211a 0%, #171d17 58%, #1b211a 100%);
-    border: 1px solid #303a2c;
+        radial-gradient(ellipse at 95% 10%, var(--hero-glow), transparent 38%),
+        linear-gradient(120deg, var(--hero-from) 0%, var(--hero-mid) 55%, var(--hero-to) 100%);
+    color: var(--on-hero);
+    border: 1px solid var(--hero-border);
     border-radius: var(--radius-lg);
 }
 
@@ -376,13 +473,13 @@ a:focus-visible {
 
 .balance-label {
     margin: 0;
-    color: #c1c9bc;
+    color: var(--on-hero-soft);
     font-size: 12px;
 }
 
 .balance-caption {
     margin: 4px 0 0;
-    color: var(--text-muted);
+    color: var(--on-hero-muted);
     font-size: 11px;
 }
 
@@ -391,9 +488,9 @@ a:focus-visible {
     width: 34px;
     height: 34px;
     place-items: center;
-    color: var(--green);
-    background: var(--green-soft);
-    border: 1px solid rgba(181, 239, 120, 0.14);
+    color: var(--on-hero);
+    background: var(--hero-chip);
+    border: 1px solid var(--hero-line);
     border-radius: 11px;
     font-size: 19px;
 }
@@ -415,28 +512,28 @@ a:focus-visible {
 }
 
 .decimal {
-    color: #c0c9b9;
+    color: var(--on-hero-soft);
     font-size: 0.62em;
     letter-spacing: -0.8px;
 }
 
 .balance-period {
     margin-top: 6px;
-    color: var(--text-muted);
+    color: var(--on-hero-muted);
     font-size: 10px;
     letter-spacing: 1px;
 }
 
 .balance-divider {
     height: 1px;
-    background: rgba(207, 222, 199, 0.10);
+    background: var(--hero-line);
 }
 
 .balance-bottom {
     flex-wrap: wrap;
     gap: 12px;
     padding-top: 16px;
-    color: var(--text-muted);
+    color: var(--on-hero-muted);
     font-size: 10px;
 }
 
@@ -450,7 +547,7 @@ a:focus-visible {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #7f8c76;
+    background: var(--on-hero-muted);
 }
 
 .balance-decoration {
@@ -458,7 +555,7 @@ a:focus-visible {
     z-index: -1;
     width: 210px;
     height: 210px;
-    border: 1px solid rgba(181, 239, 120, 0.055);
+    border: 1px solid var(--hero-ring);
     border-radius: 50%;
     pointer-events: none;
 }
@@ -491,7 +588,7 @@ a:focus-visible {
 
 .metric-card:hover {
     background: var(--surface-raised);
-    border-color: #394237;
+    border-color: var(--border-strong);
 }
 
 .metric-top {
@@ -517,13 +614,13 @@ a:focus-visible {
 
 .income-icon,
 .savings-icon {
-    color: var(--green);
-    background: var(--green-soft);
+    color: var(--income);
+    background: var(--income-soft);
 }
 
 .expense-icon {
-    color: var(--red);
-    background: rgba(230, 161, 154, 0.09);
+    color: var(--expense);
+    background: var(--expense-soft);
 }
 
 .metric-value {
@@ -546,11 +643,11 @@ a:focus-visible {
 }
 
 .metric-accent {
-    color: var(--green);
+    color: var(--income);
 }
 
 .metric-neutral {
-    color: #c6b3a4;
+    color: var(--text-secondary);
 }
 
 .content-grid {
@@ -636,11 +733,11 @@ a:focus-visible {
 }
 
 .legend-income {
-    background: var(--green);
+    background: var(--income);
 }
 
 .legend-expense {
-    background: #718b67;
+    background: var(--expense-bar);
 }
 
 .chart {
@@ -659,7 +756,7 @@ a:focus-visible {
 
 .chart-grid span {
     width: 100%;
-    border-top: 1px dashed #2a3029;
+    border-top: 1px dashed var(--border);
 }
 
 .chart-columns {
@@ -702,15 +799,15 @@ a:focus-visible {
 }
 
 .bar-income {
-    background: linear-gradient(180deg, #b5ef78, #82bd51);
+    background: linear-gradient(180deg, var(--income), var(--income-deep));
 }
 
 .bar-expense {
-    background: #536b4a;
+    background: var(--expense-bar);
 }
 
 .current-month .bar-income {
-    box-shadow: 0 0 18px rgba(181, 239, 120, 0.10);
+    box-shadow: 0 0 18px var(--income-glow);
 }
 
 .month-label {
@@ -719,7 +816,7 @@ a:focus-visible {
 }
 
 .current-month .month-label {
-    color: var(--green);
+    color: var(--accent);
 }
 
 .chart-note {
@@ -739,7 +836,7 @@ a:focus-visible {
     width: 15px;
     height: 15px;
     place-items: center;
-    border: 1px solid #4b5546;
+    border: 1px solid var(--border-strong);
     border-radius: 50%;
     font-size: 9px;
 }
@@ -772,19 +869,19 @@ a:focus-visible {
 }
 
 .account-cash {
-    color: var(--green);
-    background: rgba(181, 239, 120, 0.09);
-    border-color: rgba(181, 239, 120, 0.08);
+    color: var(--income);
+    background: var(--income-soft);
+    border-color: var(--income-line);
 }
 
 .account-bank {
-    color: var(--blue);
-    background: rgba(157, 187, 229, 0.09);
+    color: var(--accent);
+    background: var(--accent-soft);
 }
 
 .account-savings {
-    color: #c7b1ed;
-    background: rgba(199, 177, 237, 0.09);
+    color: var(--violet);
+    background: var(--violet-soft);
 }
 
 .account-info {
@@ -866,7 +963,7 @@ a:focus-visible {
 .transactions-table th {
     padding: 12px 11px;
     color: var(--text-muted);
-    background: #191d19;
+    background: var(--surface-head);
     border-top: 1px solid var(--border-soft);
     border-bottom: 1px solid var(--border-soft);
     font-size: 9px;
@@ -927,21 +1024,21 @@ a:focus-visible {
 }
 
 .symbol-income {
-    color: var(--green);
-    background: var(--green-soft);
+    color: var(--income);
+    background: var(--income-soft);
 }
 
 .symbol-expense {
-    color: var(--red);
-    background: rgba(230, 161, 154, 0.08);
+    color: var(--expense);
+    background: var(--expense-soft);
 }
 
 .category-label {
     display: inline-block;
     padding: 5px 8px;
-    color: #c0c8bb;
-    background: #222822;
-    border: 1px solid #2c332b;
+    color: var(--text-secondary);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
     border-radius: 6px;
     font-size: 10px;
 }
@@ -957,12 +1054,12 @@ a:focus-visible {
 }
 
 .amount-positive {
-    color: var(--green);
+    color: var(--income);
     font-weight: 600;
 }
 
 .amount-negative {
-    color: #e4b2aa;
+    color: var(--expense);
     font-weight: 600;
 }
 
@@ -978,7 +1075,7 @@ a:focus-visible {
 
 .footer-dot {
     padding: 0 3px;
-    color: #485142;
+    color: var(--text-faint);
 }
 
 @media (min-width: 1600px) {
@@ -1229,10 +1326,10 @@ a:focus-visible {
     width: 100%;
     min-height: 46px;
     padding: 0 13px;
-    border: 1px solid var(--border, #30362f);
+    border: 1px solid var(--border);
     border-radius: 9px;
-    background: var(--bg, #101310);
-    color: var(--text, #edf0e9);
+    background: var(--bg);
+    color: var(--text);
     font: inherit;
     font-size: 13px;
     outline: none;
@@ -1240,13 +1337,13 @@ a:focus-visible {
 }
 
 .form-field input::placeholder {
-    color: var(--muted, #858b81);
+    color: var(--text-muted);
 }
 
 .form-field input:focus,
 .form-field select:focus {
-    border-color: var(--green, #b5ef78);
-    box-shadow: 0 0 0 3px rgb(181 239 120 / 10%);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-line);
 }
 
 .form-field select {
@@ -1263,7 +1360,7 @@ a:focus-visible {
 
 .form-hint {
     margin: 0;
-    color: var(--muted, #858b81);
+    color: var(--text-muted);
     font-size: 12px;
     line-height: 1.5;
 }
@@ -1282,22 +1379,22 @@ a:focus-visible {
     width: 48px;
     height: 48px;
     margin-bottom: 16px;
-    border: 1px solid var(--border, #30362f);
+    border: 1px solid var(--border);
     border-radius: 14px;
-    color: var(--green, #b5ef78);
+    color: var(--accent);
     font-size: 23px;
 }
 
 .empty-state h3 {
     margin: 0 0 8px;
-    color: var(--text, #edf0e9);
+    color: var(--text);
     font-size: 15px;
 }
 
 .empty-state p {
     max-width: 360px;
     margin: 0;
-    color: var(--muted, #858b81);
+    color: var(--text-muted);
     font-size: 13px;
     line-height: 1.6;
 }
@@ -1310,22 +1407,22 @@ a:focus-visible {
 
 .flash-message {
     padding: 13px 16px;
-    border: 1px solid var(--border, #30362f);
+    border: 1px solid var(--border);
     border-radius: 10px;
     font-size: 13px;
     line-height: 1.5;
 }
 
 .flash-success {
-    border-color: rgb(181 239 120 / 35%);
-    background: rgb(181 239 120 / 8%);
-    color: var(--green, #b5ef78);
+    border-color: var(--income-line);
+    background: var(--income-soft);
+    color: var(--income);
 }
 
 .flash-error {
-    border-color: rgb(239 120 120 / 35%);
-    background: rgb(239 120 120 / 8%);
-    color: #f2a3a3;
+    border-color: var(--expense-line);
+    background: var(--expense-soft);
+    color: var(--expense);
 }
 
 @media (max-width: 760px) {
@@ -1381,28 +1478,28 @@ a:focus-visible {
 .button-secondary {
     background: transparent;
     color: inherit;
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    border: 1px solid var(--ghost-line);
     text-decoration: none;
     cursor: pointer;
     transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .button-secondary:hover {
-    background: rgba(255, 255, 255, 0.07);
-    border-color: rgba(255, 255, 255, 0.32);
+    background: var(--ghost-fill);
+    border-color: var(--ghost-line-hover);
 }
 
 .button-danger {
     background: transparent;
-    color: #f08a8a;
-    border: 1px solid rgba(240, 138, 138, 0.35);
+    color: var(--expense);
+    border: 1px solid var(--expense-line);
     cursor: pointer;
     transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .button-danger:hover {
-    background: rgba(240, 138, 138, 0.12);
-    border-color: rgba(240, 138, 138, 0.6);
+    background: var(--expense-soft);
+    border-color: var(--expense);
 }
 
 .button-secondary:focus-visible,
@@ -1530,7 +1627,7 @@ a:focus-visible {
     height: 8px;
     overflow: hidden;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--track);
 }
 
 .budget-fill {
@@ -1541,15 +1638,15 @@ a:focus-visible {
 }
 
 .budget-fill-ok {
-    background: #5fd68f;
+    background: var(--income);
 }
 
 .budget-fill-warning {
-    background: #e8b84b;
+    background: var(--warning);
 }
 
 .budget-fill-over {
-    background: #e5645f;
+    background: var(--danger);
 }
 
 .budget-status {
@@ -1560,15 +1657,15 @@ a:focus-visible {
 }
 
 .budget-status-ok {
-    color: #5fd68f;
+    color: var(--income);
 }
 
 .budget-status-warning {
-    color: #e8b84b;
+    color: var(--warning);
 }
 
 .budget-status-over {
-    color: #e5645f;
+    color: var(--danger);
 }
 
 /* Encabezados de tabla ordenables */
