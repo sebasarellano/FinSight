@@ -1,5 +1,5 @@
 """Pruebas de la distribución de gastos por categoría."""
-
+from datetime import date
 import pytest
 
 from app import get_expense_by_category
@@ -63,3 +63,41 @@ def test_dashboard_loads_with_chart_month(client, add_transaction):
 
 def test_dashboard_ignores_invalid_month(client):
     assert client.get("/?month=abc").status_code == 200
+
+
+
+def test_each_category_has_a_fixed_color(client, add_transaction):
+    add_transaction(amount="5", category="Transporte")
+
+    result = get_expense_by_category("2026-10")
+
+    assert result[0]["color"] == "#38bdf8"
+
+
+def test_dashboard_shows_chart_and_table(client, add_transaction):
+    add_transaction(
+        amount="30",
+        category="Transporte",
+        transaction_date=date.today().isoformat(),
+    )
+
+    html = client.get("/").get_data(as_text=True)
+
+    assert 'id="category-chart"' in html
+    assert "category-swatch" in html
+    assert "vendor/chartjs/chart.umd.js" in html
+
+
+def test_dashboard_empty_month_shows_message_without_chart(client):
+    html = client.get("/?month=2000-01").get_data(as_text=True)
+
+    assert "Sin gastos en este mes" in html
+    assert "chart.umd.js" not in html
+
+
+def test_chartjs_file_is_served_locally(client):
+    response = client.get("/static/vendor/chartjs/chart.umd.js")
+    status = response.status_code
+    response.close()
+
+    assert status == 200

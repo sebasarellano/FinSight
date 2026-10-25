@@ -103,6 +103,20 @@ MAX_TRANSACTION_AMOUNT = 1_000_000_000
 BUDGET_WARNING_PERCENT = 80
 
 
+# Color de cada categoría de gasto en el gráfico del dashboard. Es fijo
+# por categoría para que "Alimentación" tenga siempre el mismo color.
+CATEGORY_COLORS = {
+    "Alimentación": "#34d399",
+    "Transporte": "#38bdf8",
+    "Vivienda": "#818cf8",
+    "Servicios": "#fbbf24",
+    "Salud": "#fb7185",
+    "Educación": "#a78bfa",
+    "Entretenimiento": "#fb923c",
+    "Otros": "#94a3b8",
+}
+DEFAULT_CATEGORY_COLOR = "#94a3b8"
+
 # ---------------------------------------------------------------
 # Filtros de plantilla: cambian solo cómo se muestra un valor.
 # ---------------------------------------------------------------
@@ -561,6 +575,9 @@ def get_expense_by_category(month_key):
             "category": row["category"],
             "total": round(row["total"], 2),
             "percent": row["total"] / grand_total * 100,
+            "color": CATEGORY_COLORS.get(
+                row["category"], DEFAULT_CATEGORY_COLOR
+            ),
         }
         for row in rows
     ]
@@ -889,6 +906,7 @@ def home():
         category_chart={
             "labels": [item["category"] for item in category_breakdown],
             "values": [item["total"] for item in category_breakdown],
+            "colors": [item["color"] for item in category_breakdown],
         },
     )
 
