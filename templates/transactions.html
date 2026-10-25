@@ -116,6 +116,13 @@
                     {{ transactions|length }} registro(s) guardado(s).
                 </p>
             </div>
+
+            {% if transactions %}
+            <a class="button button-secondary"
+               href="{{ url_for('export_transactions_csv') }}">
+                Exportar CSV
+            </a>
+            {% endif %}
         </div>
 
         {% if transactions %}

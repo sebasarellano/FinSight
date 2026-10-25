@@ -1,10 +1,20 @@
+import csv
+import io
 import math
 import re
 import secrets
 from pathlib import Path
 from datetime import date
 
-from flask import Flask, flash, redirect, render_template, request, url_for
+from flask import (
+    Flask,
+    Response,
+    flash,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 
 from database import get_db_connection, initialize_database
 
@@ -1007,6 +1017,69 @@ def delete_budget(budget_id):
 
     flash("Presupuesto eliminado correctamente.", "success")
     return redirect(url_for("budgets", month=budget["month"]))
+# ---------------------------------------------------------------
+# Exportación a CSV
+# ---------------------------------------------------------------
+
+# Texto de cada tipo de movimiento dentro del archivo.
+CSV_TYPE_LABELS = {
+    "income": "ingreso",
+    "expense": "gasto",
+    "transfer": "transferencia",
+}
+
+# Un texto que empieza con estos caracteres puede ser interpretado como
+# fórmula al abrir el CSV en Excel ("inyección de fórmulas").
+CSV_FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+
+
+def csv_safe(text):
+    """Neutraliza un texto que Excel podría interpretar como fórmula."""
+    if text.startswith(CSV_FORMULA_PREFIXES):
+        return "'" + text
+    return text
+
+
+def build_transactions_csv(transactions):
+    """Convierte los movimientos en el contenido de un archivo CSV."""
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+
+    writer.writerow(
+        ["fecha", "descripcion", "tipo", "categoria", "cuenta", "importe"]
+    )
+
+    for transaction in transactions:
+        writer.writerow([
+            transaction["transaction_date"],
+            csv_safe(transaction["description"]),
+            CSV_TYPE_LABELS.get(
+                transaction["transaction_type"],
+                transaction["transaction_type"],
+            ),
+            csv_safe(transaction["category"]),
+            csv_safe(transaction["account_name"]),
+            f"{transaction['amount']:.2f}",
+        ])
+
+    return buffer.getvalue()
+
+
+@app.route("/transactions/export.csv")
+def export_transactions_csv():
+    """Descarga todos los movimientos como archivo CSV."""
+    content = build_transactions_csv(get_transactions())
+    filename = f"finsight-movimientos-{date.today().isoformat()}.csv"
+
+    # 'utf-8-sig' añade una marca al inicio (BOM) para que Excel
+    # reconozca la codificación y muestre bien las tildes.
+    return Response(
+        content.encode("utf-8-sig"),
+        content_type="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+        },
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)
