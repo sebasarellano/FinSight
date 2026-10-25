@@ -85,6 +85,9 @@ MAX_INITIAL_BALANCE = 1_000_000_000
 # Tope razonable para el límite de un presupuesto mensual.
 MAX_BUDGET_AMOUNT = 1_000_000
 
+# Tope razonable para el importe de un movimiento.
+MAX_TRANSACTION_AMOUNT = 1_000_000_000
+
 # A partir de este porcentaje de uso, un presupuesto se considera
 # "cerca del límite". A partir del 100 % se considera superado.
 BUDGET_WARNING_PERCENT = 80
@@ -482,15 +485,25 @@ def parse_transaction_form(form):
     if transaction_type not in ("income", "expense"):
         return None, "Selecciona un tipo de movimiento válido."
 
-    # Convertir y validar el importe.
+     # Convertir y validar el importe.
     try:
         amount = float(amount_text)
     except ValueError:
         amount = 0
 
-    if not math.isfinite(amount) or amount <= 0:
-        return None, "El importe debe ser un número mayor que cero."
+    # Redondear antes de validar: 0,001 pasa a 0,00 y se rechaza.
+    if math.isfinite(amount):
+        amount = round(amount, 2)
 
+    if (
+        not math.isfinite(amount)
+        or amount <= 0
+        or amount > MAX_TRANSACTION_AMOUNT
+    ):
+        return None, (
+            "El importe debe ser un número mayor que cero "
+            "y no superar 1.000.000.000."
+        )
     # Validar la fecha.
     try:
         parsed_date = date.fromisoformat(transaction_date)
