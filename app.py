@@ -530,6 +530,40 @@ def get_monthly_cash_flow(today=None):
 
     return months
 
+def get_expense_by_category(month_key):
+    """Suma los gastos de un mes (formato 'AAAA-MM') por categoría.
+
+    Devuelve una lista ordenada de mayor a menor gasto. Cada elemento
+    incluye el total y el porcentaje que representa del gasto del mes.
+    Los ingresos y las transferencias no cuentan.
+    """
+    connection = get_db_connection()
+
+    try:
+        rows = connection.execute(
+            """
+            SELECT category, SUM(amount) AS total
+            FROM transactions
+            WHERE transaction_type = 'expense'
+              AND strftime('%Y-%m', transaction_date) = ?
+            GROUP BY category
+            ORDER BY total DESC, category
+            """,
+            (month_key,),
+        ).fetchall()
+    finally:
+        connection.close()
+
+    grand_total = sum(row["total"] for row in rows)
+
+    return [
+        {
+            "category": row["category"],
+            "total": round(row["total"], 2),
+            "percent": row["total"] / grand_total * 100,
+        }
+        for row in rows
+    ]
 # ---------------------------------------------------------------
 # Validación de formularios
 # ---------------------------------------------------------------
@@ -807,6 +841,13 @@ def build_sort_links(filters):
 def home():
     today = date.today()
 
+    # Mes del gráfico por categoría: el de la dirección (?month=AAAA-MM)
+    # si es válido; si no, el mes actual.
+    selected_month = request.args.get("month", "").strip()
+
+    if not is_valid_month(selected_month):
+        selected_month = today.strftime("%Y-%m")
+
     # Cuentas con su saldo y su peso dentro del patrimonio.
     accounts = get_account_balances()
     total_balance = round(sum(a["balance"] for a in accounts), 2)
@@ -829,6 +870,9 @@ def home():
         month_net / month_income * 100 if month_income > 0 else None
     )
 
+    # Distribución de gastos por categoría del mes elegido.
+    category_breakdown = get_expense_by_category(selected_month)
+
     return render_template(
         "dashboard.html",
         accounts=accounts,
@@ -839,8 +883,14 @@ def home():
         savings_rate=savings_rate,
         recent_transactions=get_transactions(limit=5),
         monthly_cash_flow=get_monthly_cash_flow(today),
+        selected_month=selected_month,
+        category_breakdown=category_breakdown,
+        # Datos listos para entregar a Chart.js como JSON.
+        category_chart={
+            "labels": [item["category"] for item in category_breakdown],
+            "values": [item["total"] for item in category_breakdown],
+        },
     )
-
 
 @app.route("/accounts")
 def accounts():
