@@ -3,12 +3,12 @@
 {% block title %}Resumen financiero · FinSight{% endblock %}
 
 {% block content %}
-<section class="dashboard">
+<section class="dashboard dashboard-home">
 
     <div class="page-heading">
         <div>
             <p class="eyebrow">TU ESPACIO FINANCIERO</p>
-            <h1>Resumen general<span class="heading-period">.</span></h1>
+            <h1>Resumen <em class="serif-accent">general</em><span class="heading-period">.</span></h1>
             <p class="page-description">
                 Una visión clara de cómo se mueve tu dinero.
             </p>
@@ -20,6 +20,9 @@
     </div>
 
     <section class="balance-panel" aria-labelledby="balance-title">
+        {# Palabra gigante y casi transparente de fondo: solo decoración #}
+        <span class="balance-ghost" aria-hidden="true">Patrimonio</span>
+
         <div class="balance-top">
             <div>
                 <p class="balance-label" id="balance-title">Patrimonio total</p>
@@ -31,7 +34,7 @@
         {# Se separa la parte entera de los decimales para conservar el estilo #}
         {% set total_parts = (total_balance|money).split(',') %}
         <div class="balance-main">
-            <h2>$ {{ total_parts[0] }}<span class="decimal">,{{ total_parts[1] }}</span></h2>
+            <h2 data-count-to="{{ total_balance }}">$ <span class="count-int">{{ total_parts[0] }}</span><span class="decimal">,{{ total_parts[1] }}</span></h2>
             <span class="balance-period">USD</span>
         </div>
 
@@ -122,7 +125,8 @@
 
                 <div class="chart-columns">
                     {% for month in monthly_cash_flow %}
-                    <div class="chart-month{% if month.is_current %} current-month{% endif %}">
+                    <div class="chart-month{% if month.is_current %} current-month{% endif %}"
+                         style="--i: {{ loop.index0 }}">
                         <div class="bar-pair">
                             <span
                                 class="bar bar-income"
@@ -343,6 +347,50 @@
 {% endblock %}
 
 {% block scripts %}
+{# El patrimonio "cuenta" hasta su valor al cargar la página. El número real
+   ya viene escrito por el servidor: el script solo lo anima. #}
+<script>
+    (function () {
+        var heading = document.querySelector("[data-count-to]");
+        var integer = heading && heading.querySelector(".count-int");
+        var target = heading ? parseFloat(heading.dataset.countTo) : NaN;
+
+        // Quien pidió reducir las animaciones ve la cifra final de inmediato.
+        var reduceMotion = window.matchMedia(
+            "(prefers-reduced-motion: reduce)"
+        ).matches;
+
+        if (!integer || !isFinite(target) || reduceMotion) {
+            return;
+        }
+
+        var finalText = integer.textContent;
+        var duration = 900;
+        var start = null;
+
+        // 1234567 -> "1.234.567" (separador de miles español)
+        function format(value) {
+            var text = Math.abs(value).toString();
+            text = text.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            return (value < 0 ? "-" : "") + text;
+        }
+
+        function step(timestamp) {
+            if (start === null) { start = timestamp; }
+            var progress = Math.min((timestamp - start) / duration, 1);
+            var eased = 1 - Math.pow(1 - progress, 3);
+
+            integer.textContent = progress < 1
+                ? format(Math.trunc(target * eased))
+                : finalText;
+
+            if (progress < 1) { requestAnimationFrame(step); }
+        }
+
+        requestAnimationFrame(step);
+    })();
+</script>
+
 {# Chart.js solo se carga si hay gastos que dibujar #}
 {% if category_breakdown %}
 <script src="{{ url_for('static', filename='vendor/chartjs/chart.umd.js') }}"></script>
@@ -363,6 +411,13 @@
             document.getElementById("category-chart-data").textContent
         );
 
+        // Los colores y fuentes salen de las variables de styles.css: si la
+        // paleta cambia allí, el gráfico la sigue sin tocar este script.
+        var styles = getComputedStyle(document.documentElement);
+        function token(name) {
+            return styles.getPropertyValue(name).trim();
+        }
+
         // Mismo formato de dinero que el resto de la aplicación: 1.234,50
         function money(value) {
             var parts = value.toFixed(2).split(".");
@@ -375,36 +430,101 @@
             "(prefers-reduced-motion: reduce)"
         ).matches;
 
-        new Chart(canvas, {
-            type: "doughnut",
-            data: {
-                labels: chartData.labels,
-                datasets: [{
-                    data: chartData.values,
-                    backgroundColor: chartData.colors,
-                    borderWidth: 0,
-                    borderRadius: 4,
-                    spacing: 3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: "68%",
-                animation: reduceMotion ? false : { duration: 600 },
-                plugins: {
-                    // La tabla de al lado hace de leyenda.
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function (context) {
-                                return " " + context.label + ": " + money(context.parsed);
+        var CUTOUT = 0.68;
+
+        // Texto en el hueco de la dona: el gasto total del mes.
+        var centerText = {
+            id: "centerText",
+            afterDraw: function (chart) {
+                var area = chart.chartArea;
+                var x = (area.left + area.right) / 2;
+                var y = (area.top + area.bottom) / 2;
+                var hole = Math.min(area.right - area.left,
+                                    area.bottom - area.top) * CUTOUT / 2;
+                var total = chart.data.datasets[0].data.reduce(
+                    function (sum, value) { return sum + value; }, 0
+                );
+                var amount = money(total);
+                var size = 26;
+                var ctx = chart.ctx;
+
+                ctx.save();
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+
+                // Se reduce la letra hasta que la cifra cabe dentro del hueco.
+                do {
+                    ctx.font = "700 " + size + "px " + token("--font-heading");
+                    size -= 1;
+                } while (ctx.measureText(amount).width > hole * 1.6 && size > 12);
+
+                ctx.fillStyle = token("--text");
+                ctx.fillText(amount, x, y + 8);
+
+                ctx.font = "600 10px " + token("--font-body");
+                ctx.fillStyle = token("--text-muted");
+                ctx.fillText("GASTO TOTAL", x, y - 16);
+                ctx.restore();
+            }
+        };
+
+        function buildChart() {
+            Chart.defaults.font.family = token("--font-body");
+            Chart.defaults.color = token("--text-secondary");
+
+            new Chart(canvas, {
+                type: "doughnut",
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        data: chartData.values,
+                        backgroundColor: chartData.colors,
+                        borderWidth: 0,
+                        borderRadius: 4,
+                        spacing: 3,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: (CUTOUT * 100) + "%",
+                    layout: { padding: 8 },
+                    animation: reduceMotion ? false : { duration: 700 },
+                    plugins: {
+                        // La tabla de al lado hace de leyenda.
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: token("--surface-raised"),
+                            borderColor: token("--border-strong"),
+                            borderWidth: 1,
+                            titleColor: token("--text"),
+                            bodyColor: token("--text-secondary"),
+                            padding: 12,
+                            cornerRadius: 6,
+                            boxPadding: 4,
+                            callbacks: {
+                                label: function (context) {
+                                    return " " + context.label + ": " + money(context.parsed);
+                                }
                             }
                         }
                     }
-                }
-            }
-        });
+                },
+                plugins: [centerText]
+            });
+        }
+
+        // El texto del centro usa canvas: hay que esperar a que las fuentes
+        // locales estén cargadas o se dibujaría con una fuente de reserva.
+        if (document.fonts && document.fonts.load) {
+            Promise.all([
+                document.fonts.load('700 26px "Bricolage Display"'),
+                document.fonts.load('600 10px "Bricolage Text"')
+            ]).then(buildChart, buildChart);
+        } else {
+            buildChart();
+        }
     })();
 </script>
 {% endif %}
