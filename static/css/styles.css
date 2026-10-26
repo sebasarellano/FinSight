@@ -1920,3 +1920,63 @@ a:focus-visible {
         animation: none;
     }
 }
+
+/* ==========================================================
+   Páginas interiores: Movimientos, Presupuestos y Cuentas
+   ========================================================== */
+
+/* Entrada escalonada: el título y cada panel aparecen uno tras otro. */
+.transactions-page .page-heading,
+.transactions-page > .panel,
+.accounts-page .page-heading,
+.accounts-page > .panel {
+    animation: rise 560ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+
+.transactions-page > .panel:nth-child(2),
+.accounts-page > .panel:nth-child(2) { animation-delay: 80ms; }
+
+.transactions-page > .panel:nth-child(3),
+.accounts-page > .panel:nth-child(3) { animation-delay: 160ms; }
+
+/* Las primeras filas de la tabla entran en cascada. */
+.transactions-page .transactions-table tbody tr {
+    animation: rise 420ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+
+.transactions-page .transactions-table tbody tr:nth-child(1) { animation-delay: 180ms; }
+.transactions-page .transactions-table tbody tr:nth-child(2) { animation-delay: 220ms; }
+.transactions-page .transactions-table tbody tr:nth-child(3) { animation-delay: 260ms; }
+.transactions-page .transactions-table tbody tr:nth-child(4) { animation-delay: 300ms; }
+.transactions-page .transactions-table tbody tr:nth-child(5) { animation-delay: 340ms; }
+.transactions-page .transactions-table tbody tr:nth-child(6) { animation-delay: 380ms; }
+.transactions-page .transactions-table tbody tr:nth-child(7) { animation-delay: 420ms; }
+.transactions-page .transactions-table tbody tr:nth-child(8) { animation-delay: 460ms; }
+
+/* Las barras de presupuesto se llenan de izquierda a derecha. */
+@keyframes fill {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+}
+
+.budget-fill {
+    transform-origin: left;
+    animation: fill 800ms cubic-bezier(0.2, 0.7, 0.2, 1) 300ms backwards;
+}
+
+/* Los avisos entran con el mismo movimiento suave. */
+.flash-message {
+    animation: rise 420ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .transactions-page .page-heading,
+    .transactions-page > .panel,
+    .accounts-page .page-heading,
+    .accounts-page > .panel,
+    .transactions-page .transactions-table tbody tr,
+    .budget-fill,
+    .flash-message {
+        animation: none;
+    }
+}
