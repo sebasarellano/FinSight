@@ -52,6 +52,13 @@
 :root {
     color-scheme: dark;
 
+    /* Escala tipografica minima (accesibilidad): nada de texto por debajo de 11 px.
+       label: etiquetas en mayusculas con espaciado; small: texto secundario;
+       body: datos principales de tablas y listas. */
+    --fs-label: 11px;
+    --fs-small: 12px;
+    --fs-body: 13px;
+
     /* Superficies: negro azulado, de la más profunda a la más elevada */
     --bg: #090c12;
     --bg-glass: rgba(9, 12, 18, 0.88);
@@ -229,7 +236,7 @@ a:focus-visible {
 .eyebrow {
     margin: 0;
     color: var(--text-muted);
-    font-size: 10px;
+    font-size: var(--fs-label);
     font-weight: 700;
     letter-spacing: 1.35px;
 }
@@ -285,7 +292,7 @@ a:focus-visible {
 .nav-index {
     color: var(--text-muted);
     font-family: var(--font-body);
-    font-size: 11px;
+    font-size: var(--fs-label);
     font-weight: 600;
     letter-spacing: 0.08em;
     font-variant-numeric: tabular-nums;
@@ -400,7 +407,7 @@ a:focus-visible {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-pill);
-    font-size: 10px;
+    font-size: var(--fs-label);
 }
 
 .local-badge .status-dot {
@@ -528,7 +535,7 @@ a:focus-visible {
 .balance-caption {
     margin: 4px 0 0;
     color: var(--on-hero-muted);
-    font-size: 11px;
+    font-size: var(--fs-small);
 }
 
 .balance-icon {
@@ -568,7 +575,7 @@ a:focus-visible {
 .balance-period {
     margin-top: 6px;
     color: var(--on-hero-muted);
-    font-size: 10px;
+    font-size: var(--fs-small);
     letter-spacing: 1px;
 }
 
@@ -582,7 +589,7 @@ a:focus-visible {
     gap: 12px;
     padding-top: 16px;
     color: var(--on-hero-muted);
-    font-size: 10px;
+    font-size: var(--fs-small);
 }
 
 .balance-insight {
@@ -650,7 +657,7 @@ a:focus-visible {
 
 .metric-label {
     color: var(--text-secondary);
-    font-size: 11px;
+    font-size: var(--fs-small);
 }
 
 .metric-icon {
@@ -689,7 +696,7 @@ a:focus-visible {
     gap: 5px;
     margin: 0;
     color: var(--text-muted);
-    font-size: 10px;
+    font-size: var(--fs-small);
 }
 
 .metric-accent {
@@ -739,7 +746,7 @@ a:focus-visible {
 }
 
 .panel-description {
-    font-size: 11px;
+    font-size: var(--fs-small);
 }
 
 .period-chip,
@@ -750,7 +757,7 @@ a:focus-visible {
     background: transparent;
     border: 1px solid var(--border-strong);
     border-radius: var(--radius-sm);
-    font-size: 10px;
+    font-size: var(--fs-label);
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -770,7 +777,7 @@ a:focus-visible {
     gap: 17px;
     margin-top: 25px;
     color: var(--text-secondary);
-    font-size: 10px;
+    font-size: var(--fs-small);
 }
 
 .chart-legend span {
@@ -865,7 +872,7 @@ a:focus-visible {
 
 .month-label {
     color: var(--text-muted);
-    font-size: 10px;
+    font-size: var(--fs-small);
 }
 
 .current-month .month-label {
@@ -880,7 +887,7 @@ a:focus-visible {
     padding-top: 13px;
     color: var(--text-muted);
     border-top: 1px solid var(--border-soft);
-    font-size: 10px;
+    font-size: var(--fs-small);
 }
 
 .note-mark {
@@ -891,7 +898,7 @@ a:focus-visible {
     place-items: center;
     border: 1px solid var(--border-strong);
     border-radius: 50%;
-    font-size: 9px;
+    font-size: var(--fs-label);
 }
 
 .account-list {
@@ -948,7 +955,7 @@ a:focus-visible {
 .account-name {
     overflow: hidden;
     color: var(--text);
-    font-size: 11px;
+    font-size: var(--fs-body);
     font-weight: 600;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -956,7 +963,7 @@ a:focus-visible {
 
 .account-subtitle {
     color: var(--text-muted);
-    font-size: 10px;
+    font-size: var(--fs-small);
 }
 
 .account-amount {
@@ -968,14 +975,14 @@ a:focus-visible {
 }
 
 .account-amount strong {
-    font-size: 11px;
+    font-size: var(--fs-body);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
 }
 
 .account-amount span {
     color: var(--text-muted);
-    font-size: 10px;
+    font-size: var(--fs-small);
 }
 
 .account-total {
@@ -984,12 +991,12 @@ a:focus-visible {
     gap: 10px;
     margin-top: 17px;
     color: var(--text-secondary);
-    font-size: 10px;
+    font-size: var(--fs-small);
 }
 
 .account-total strong {
     color: var(--text);
-    font-size: 11px;
+    font-size: var(--fs-body);
     font-variant-numeric: tabular-nums;
 }
 
@@ -1019,7 +1026,7 @@ a:focus-visible {
     background: var(--surface-head);
     border-top: 1px solid var(--border-soft);
     border-bottom: 1px solid var(--border-soft);
-    font-size: 9px;
+    font-size: var(--fs-label);
     font-weight: 700;
     letter-spacing: 0.75px;
 }
@@ -1033,10 +1040,15 @@ a:focus-visible {
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
+.transactions-table tfoot td {
+    background: var(--surface-head);
+    border-top: 1px solid var(--border-soft);
+}
+
 .transactions-table td {
     padding: 14px 11px;
     border-bottom: 1px solid var(--border-soft);
-    font-size: 11px;
+    font-size: var(--fs-body);
 }
 
 .transactions-table tbody tr {
@@ -1065,13 +1077,13 @@ a:focus-visible {
 
 .transaction-name strong {
     color: var(--text);
-    font-size: 11px;
+    font-size: var(--fs-body);
     font-weight: 600;
 }
 
 .transaction-name small {
     color: var(--text-muted);
-    font-size: 10px;
+    font-size: var(--fs-small);
 }
 
 .transaction-symbol {
@@ -1101,7 +1113,7 @@ a:focus-visible {
     background: transparent;
     border: 1px solid var(--border-strong);
     border-radius: var(--radius-sm);
-    font-size: 10px;
+    font-size: var(--fs-label);
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -1134,7 +1146,7 @@ a:focus-visible {
     gap: 10px;
     padding: 21px max(var(--page-gutter), calc((100% - var(--page-content)) / 2)) 25px;
     color: var(--text-muted);
-    font-size: 10px;
+    font-size: var(--fs-small);
 }
 
 .footer-dot {
@@ -1370,7 +1382,15 @@ a:focus-visible {
     margin-bottom: 24px;
 }
 
+/* Los paneles de formulario y el de categorias no tenian relleno propio:
+   el contenido quedaba pegado al borde. */
+.movement-form-panel,
+.category-panel {
+    padding: 22px;
+}
+
 .movement-form {
+    margin-top: 20px;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 22px 20px;
