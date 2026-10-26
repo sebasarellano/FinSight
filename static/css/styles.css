@@ -79,6 +79,7 @@
 
     /* Botón principal: blanco azulado */
     --button-bg: #e8eefb;
+    --button-bg-hover: #ffffff;
     --on-button: #0a1020;
 
     /* Panel principal: bloque cobalto a sangre */
@@ -117,15 +118,21 @@
     --ghost-fill: rgba(255, 255, 255, 0.07);
     --track: rgba(255, 255, 255, 0.08);
 
-    /* Formas (se renovarán en el PR de componentes) */
-    --radius-sm: 10px;
-    --radius-md: 15px;
-    --radius-lg: 20px;
+    /* Formas: paneles casi rectos y píldoras para botones */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-pill: 999px;
 
     /* Tipografía */
     --font-body: "Bricolage Text", system-ui, -apple-system, "Segoe UI", sans-serif;
     --font-heading: "Bricolage Display", "Bricolage Text", system-ui, -apple-system, "Segoe UI", sans-serif;
     --font-accent: "Instrument Serif", Georgia, "Times New Roman", serif;
+
+    /* Maquetación: el contenido mide como máximo --page-content y la barra
+       superior y el pie se alinean con él en pantallas anchas. */
+    --page-content: 1400px;
+    --page-gutter: 42px;
 }
 
 * {
@@ -197,7 +204,7 @@ a:focus-visible {
     width: 34px;
     height: 34px;
     place-items: center;
-    border-radius: 11px;
+    border-radius: var(--radius-sm);
     color: var(--on-accent);
     background: var(--accent);
     font-family: var(--font-heading);
@@ -209,7 +216,7 @@ a:focus-visible {
     font-family: var(--font-heading);
     font-size: 19px;
     font-weight: 800;
-    letter-spacing: -0.9px;
+    letter-spacing: -0.02em;
 }
 
 .brand-period,
@@ -250,7 +257,7 @@ a:focus-visible {
     font-family: var(--font-heading);
     font-size: 19px;
     font-weight: 700;
-    letter-spacing: -0.6px;
+    letter-spacing: -0.02em;
     line-height: 1.2;
     transition: background 160ms ease, color 160ms ease,
                 border-color 160ms ease;
@@ -349,7 +356,7 @@ a:focus-visible {
     align-items: center;
     justify-content: space-between;
     min-height: 68px;
-    padding: 0 42px;
+    padding: 0 max(var(--page-gutter), calc((100% - var(--page-content)) / 2));
     background: var(--bg-glass);
     border-bottom: 1px solid var(--border-soft);
     backdrop-filter: blur(16px);
@@ -391,7 +398,7 @@ a:focus-visible {
     color: var(--text-secondary);
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     font-size: 10px;
 }
 
@@ -415,9 +422,9 @@ a:focus-visible {
 
 .dashboard {
     width: 100%;
-    max-width: 1500px;
+    max-width: calc(var(--page-content) + 2 * var(--page-gutter));
     margin: 0 auto;
-    padding: 38px 42px 20px;
+    padding: 38px var(--page-gutter) 20px;
 }
 
 .page-heading {
@@ -437,7 +444,7 @@ a:focus-visible {
     font-family: var(--font-heading);
     font-size: clamp(25px, 2.2vw, 32px);
     font-weight: 700;
-    letter-spacing: -1.5px;
+    letter-spacing: -0.03em;
     line-height: 1.2;
 }
 
@@ -453,17 +460,29 @@ a:focus-visible {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    min-height: 40px;
-    padding: 0 15px;
+    min-height: 42px;
+    padding: 0 20px;
     border: 1px solid transparent;
-    border-radius: var(--radius-sm);
-    font-size: 12px;
+    border-radius: var(--radius-pill);
+    font-size: 13px;
     font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: background 160ms ease, border-color 160ms ease,
+                transform 160ms ease;
+}
+
+.button:active:not(:disabled) {
+    transform: translateY(1px);
 }
 
 .button-primary {
     color: var(--on-button);
     background: var(--button-bg);
+}
+
+.button-primary:hover:not(:disabled) {
+    background: var(--button-bg-hover);
 }
 
 .button-primary:disabled {
@@ -519,7 +538,7 @@ a:focus-visible {
     color: var(--on-hero);
     background: var(--hero-chip);
     border: 1px solid var(--hero-line);
-    border-radius: 11px;
+    border-radius: var(--radius-sm);
     font-size: 19px;
 }
 
@@ -534,7 +553,7 @@ a:focus-visible {
     font-family: var(--font-heading);
     font-size: clamp(32px, 3.4vw, 44px);
     font-weight: 700;
-    letter-spacing: -2px;
+    letter-spacing: -0.03em;
     line-height: 1.2;
     font-variant-numeric: tabular-nums;
 }
@@ -542,7 +561,7 @@ a:focus-visible {
 .decimal {
     color: var(--on-hero-soft);
     font-size: 0.62em;
-    letter-spacing: -0.8px;
+    letter-spacing: -0.02em;
 }
 
 .balance-period {
@@ -611,12 +630,14 @@ a:focus-visible {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    transition: border-color 160ms ease, background 160ms ease;
+    transition: border-color 160ms ease, background 160ms ease,
+                transform 160ms ease;
 }
 
 .metric-card:hover {
     background: var(--surface-raised);
     border-color: var(--border-strong);
+    transform: translateY(-2px);
 }
 
 .metric-top {
@@ -636,7 +657,7 @@ a:focus-visible {
     width: 29px;
     height: 29px;
     place-items: center;
-    border-radius: 9px;
+    border-radius: var(--radius-sm);
     font-size: 16px;
 }
 
@@ -657,7 +678,7 @@ a:focus-visible {
     font-family: var(--font-heading);
     font-size: clamp(18px, 1.8vw, 25px);
     font-weight: 700;
-    letter-spacing: -0.9px;
+    letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
 }
 
@@ -713,7 +734,7 @@ a:focus-visible {
     font-family: var(--font-heading);
     font-size: 16px;
     font-weight: 700;
-    letter-spacing: -0.5px;
+    letter-spacing: -0.01em;
 }
 
 .panel-description {
@@ -725,10 +746,13 @@ a:focus-visible {
     flex-shrink: 0;
     padding: 7px 9px;
     color: var(--text-secondary);
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
     font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
 .account-count {
@@ -892,7 +916,7 @@ a:focus-visible {
     height: 36px;
     place-items: center;
     border: 1px solid transparent;
-    border-radius: 11px;
+    border-radius: var(--radius-sm);
     font-size: 16px;
 }
 
@@ -1001,17 +1025,25 @@ a:focus-visible {
 
 .transactions-table th:first-child {
     padding-left: 12px;
-    border-radius: 7px 0 0 7px;
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
 }
 
 .transactions-table th:last-child {
-    border-radius: 0 7px 7px 0;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
 .transactions-table td {
     padding: 14px 11px;
     border-bottom: 1px solid var(--border-soft);
     font-size: 11px;
+}
+
+.transactions-table tbody tr {
+    transition: background 160ms ease;
+}
+
+.transactions-table tbody tr:hover {
+    background: var(--surface-raised);
 }
 
 .transactions-table tbody tr:last-child td {
@@ -1047,7 +1079,7 @@ a:focus-visible {
     width: 31px;
     height: 31px;
     place-items: center;
-    border-radius: 9px;
+    border-radius: var(--radius-sm);
     font-size: 15px;
 }
 
@@ -1065,10 +1097,13 @@ a:focus-visible {
     display: inline-block;
     padding: 5px 8px;
     color: var(--text-secondary);
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: 6px;
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
     font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
 }
 
 .date-cell,
@@ -1096,7 +1131,7 @@ a:focus-visible {
     flex-wrap: wrap;
     justify-content: space-between;
     gap: 10px;
-    padding: 21px 42px 25px;
+    padding: 21px max(var(--page-gutter), calc((100% - var(--page-content)) / 2)) 25px;
     color: var(--text-muted);
     font-size: 10px;
 }
@@ -1107,18 +1142,16 @@ a:focus-visible {
 }
 
 @media (min-width: 1600px) {
-    .dashboard {
-        padding-right: 54px;
-        padding-left: 54px;
-    }
-
-    .topbar {
-        padding-right: 54px;
-        padding-left: 54px;
+    :root {
+        --page-gutter: 54px;
     }
 }
 
 @media (max-width: 1150px) {
+    :root {
+        --page-gutter: 25px;
+    }
+
     .sidebar {
         width: 205px;
     }
@@ -1129,16 +1162,6 @@ a:focus-visible {
 
     .main-content {
         margin-left: 205px;
-    }
-
-    .dashboard {
-        padding-right: 25px;
-        padding-left: 25px;
-    }
-
-    .topbar {
-        padding-right: 25px;
-        padding-left: 25px;
     }
 
     .content-grid {
@@ -1154,13 +1177,13 @@ a:focus-visible {
         padding-left: 3px;
     }
 
-    .page-footer {
-        padding-right: 25px;
-        padding-left: 25px;
-    }
 }
 
 @media (max-width: 760px) {
+    :root {
+        --page-gutter: 16px;
+    }
+
     .sidebar {
         position: static;
         width: 100%;
@@ -1193,7 +1216,7 @@ a:focus-visible {
         gap: 8px;
         padding: 8px 14px;
         border-color: var(--border);
-        border-radius: 999px;
+        border-radius: var(--radius-pill);
         font-size: 15px;
     }
 
@@ -1216,7 +1239,6 @@ a:focus-visible {
     .topbar {
         position: static;
         min-height: 55px;
-        padding: 0 18px;
     }
 
     .local-badge {
@@ -1235,7 +1257,8 @@ a:focus-visible {
     }
 
     .dashboard {
-        padding: 27px 16px 15px;
+        padding-top: 27px;
+        padding-bottom: 15px;
     }
 
     .page-heading {
@@ -1321,7 +1344,8 @@ a:focus-visible {
 
     .page-footer {
         flex-direction: column;
-        padding: 15px 16px 23px;
+        padding-top: 15px;
+        padding-bottom: 23px;
     }
 }
 
@@ -1374,7 +1398,7 @@ a:focus-visible {
     min-height: 46px;
     padding: 0 13px;
     border: 1px solid var(--border);
-    border-radius: 9px;
+    border-radius: var(--radius-md);
     background: var(--bg);
     color: var(--text);
     font: inherit;
@@ -1391,6 +1415,11 @@ a:focus-visible {
 .form-field select:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-line);
+}
+
+.form-field input:hover:not(:focus),
+.form-field select:hover:not(:focus) {
+    border-color: var(--border-strong);
 }
 
 .form-field select {
@@ -1427,7 +1456,7 @@ a:focus-visible {
     height: 48px;
     margin-bottom: 16px;
     border: 1px solid var(--border);
-    border-radius: 14px;
+    border-radius: var(--radius-md);
     color: var(--accent);
     font-size: 23px;
 }
@@ -1455,7 +1484,7 @@ a:focus-visible {
 .flash-message {
     padding: 13px 16px;
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     font-size: 13px;
     line-height: 1.5;
 }
@@ -1518,7 +1547,8 @@ a:focus-visible {
 }
 
 .button-small {
-    padding: 0.4rem 0.8rem;
+    min-height: 34px;
+    padding: 0 14px;
     font-size: 0.8125rem;
 }
 
@@ -1673,7 +1703,7 @@ a:focus-visible {
 .budget-track {
     height: 8px;
     overflow: hidden;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: var(--track);
 }
 
@@ -1681,7 +1711,7 @@ a:focus-visible {
     display: block;
     height: 100%;
     width: var(--width, 0%);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
 }
 
 .budget-fill-ok {
@@ -1771,7 +1801,7 @@ a:focus-visible {
     padding: 10px 18px;
     color: var(--on-button);
     background: var(--button-bg);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     font-size: 13px;
     font-weight: 700;
     transform: translateY(-200%);
