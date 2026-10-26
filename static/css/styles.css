@@ -117,10 +117,11 @@
     --ghost-fill: rgba(255, 255, 255, 0.07);
     --track: rgba(255, 255, 255, 0.08);
 
-    /* Formas (se renovarán en el PR de componentes) */
-    --radius-sm: 10px;
-    --radius-md: 15px;
-    --radius-lg: 20px;
+    /* Formas: paneles casi rectos y píldoras para botones */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-pill: 999px;
 
     /* Tipografía */
     --font-body: "Bricolage Text", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -202,7 +203,7 @@ a:focus-visible {
     width: 34px;
     height: 34px;
     place-items: center;
-    border-radius: 11px;
+    border-radius: var(--radius-sm);
     color: var(--on-accent);
     background: var(--accent);
     font-family: var(--font-heading);
@@ -396,7 +397,7 @@ a:focus-visible {
     color: var(--text-secondary);
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     font-size: 10px;
 }
 
@@ -524,7 +525,7 @@ a:focus-visible {
     color: var(--on-hero);
     background: var(--hero-chip);
     border: 1px solid var(--hero-line);
-    border-radius: 11px;
+    border-radius: var(--radius-sm);
     font-size: 19px;
 }
 
@@ -641,7 +642,7 @@ a:focus-visible {
     width: 29px;
     height: 29px;
     place-items: center;
-    border-radius: 9px;
+    border-radius: var(--radius-sm);
     font-size: 16px;
 }
 
@@ -897,7 +898,7 @@ a:focus-visible {
     height: 36px;
     place-items: center;
     border: 1px solid transparent;
-    border-radius: 11px;
+    border-radius: var(--radius-sm);
     font-size: 16px;
 }
 
@@ -1006,11 +1007,11 @@ a:focus-visible {
 
 .transactions-table th:first-child {
     padding-left: 12px;
-    border-radius: 7px 0 0 7px;
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
 }
 
 .transactions-table th:last-child {
-    border-radius: 0 7px 7px 0;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
 .transactions-table td {
@@ -1052,7 +1053,7 @@ a:focus-visible {
     width: 31px;
     height: 31px;
     place-items: center;
-    border-radius: 9px;
+    border-radius: var(--radius-sm);
     font-size: 15px;
 }
 
@@ -1186,7 +1187,7 @@ a:focus-visible {
         gap: 8px;
         padding: 8px 14px;
         border-color: var(--border);
-        border-radius: 999px;
+        border-radius: var(--radius-pill);
         font-size: 15px;
     }
 
@@ -1368,7 +1369,7 @@ a:focus-visible {
     min-height: 46px;
     padding: 0 13px;
     border: 1px solid var(--border);
-    border-radius: 9px;
+    border-radius: var(--radius-md);
     background: var(--bg);
     color: var(--text);
     font: inherit;
@@ -1421,7 +1422,7 @@ a:focus-visible {
     height: 48px;
     margin-bottom: 16px;
     border: 1px solid var(--border);
-    border-radius: 14px;
+    border-radius: var(--radius-md);
     color: var(--accent);
     font-size: 23px;
 }
@@ -1449,7 +1450,7 @@ a:focus-visible {
 .flash-message {
     padding: 13px 16px;
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     font-size: 13px;
     line-height: 1.5;
 }
@@ -1667,7 +1668,7 @@ a:focus-visible {
 .budget-track {
     height: 8px;
     overflow: hidden;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: var(--track);
 }
 
@@ -1675,7 +1676,7 @@ a:focus-visible {
     display: block;
     height: 100%;
     width: var(--width, 0%);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
 }
 
 .budget-fill-ok {
@@ -1765,7 +1766,7 @@ a:focus-visible {
     padding: 10px 18px;
     color: var(--on-button);
     background: var(--button-bg);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     font-size: 13px;
     font-weight: 700;
     transform: translateY(-200%);
