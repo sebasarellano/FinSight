@@ -62,6 +62,8 @@
                     id="initial_balance"
                     name="initial_balance"
                     type="number"
+                    min="-1000000000"
+                    max="1000000000"
                     step="0.01"
                     value="{{ '%.2f'|format(account['initial_balance']) }}"
                     required
