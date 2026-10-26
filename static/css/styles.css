@@ -126,6 +126,11 @@
     --font-body: "Bricolage Text", system-ui, -apple-system, "Segoe UI", sans-serif;
     --font-heading: "Bricolage Display", "Bricolage Text", system-ui, -apple-system, "Segoe UI", sans-serif;
     --font-accent: "Instrument Serif", Georgia, "Times New Roman", serif;
+
+    /* Maquetación: el contenido mide como máximo --page-content y la barra
+       superior y el pie se alinean con él en pantallas anchas. */
+    --page-content: 1400px;
+    --page-gutter: 42px;
 }
 
 * {
@@ -349,7 +354,7 @@ a:focus-visible {
     align-items: center;
     justify-content: space-between;
     min-height: 68px;
-    padding: 0 42px;
+    padding: 0 max(var(--page-gutter), calc((100% - var(--page-content)) / 2));
     background: var(--bg-glass);
     border-bottom: 1px solid var(--border-soft);
     backdrop-filter: blur(16px);
@@ -415,9 +420,9 @@ a:focus-visible {
 
 .dashboard {
     width: 100%;
-    max-width: 1500px;
+    max-width: calc(var(--page-content) + 2 * var(--page-gutter));
     margin: 0 auto;
-    padding: 38px 42px 20px;
+    padding: 38px var(--page-gutter) 20px;
 }
 
 .page-heading {
@@ -1096,7 +1101,7 @@ a:focus-visible {
     flex-wrap: wrap;
     justify-content: space-between;
     gap: 10px;
-    padding: 21px 42px 25px;
+    padding: 21px max(var(--page-gutter), calc((100% - var(--page-content)) / 2)) 25px;
     color: var(--text-muted);
     font-size: 10px;
 }
@@ -1107,18 +1112,16 @@ a:focus-visible {
 }
 
 @media (min-width: 1600px) {
-    .dashboard {
-        padding-right: 54px;
-        padding-left: 54px;
-    }
-
-    .topbar {
-        padding-right: 54px;
-        padding-left: 54px;
+    :root {
+        --page-gutter: 54px;
     }
 }
 
 @media (max-width: 1150px) {
+    :root {
+        --page-gutter: 25px;
+    }
+
     .sidebar {
         width: 205px;
     }
@@ -1129,16 +1132,6 @@ a:focus-visible {
 
     .main-content {
         margin-left: 205px;
-    }
-
-    .dashboard {
-        padding-right: 25px;
-        padding-left: 25px;
-    }
-
-    .topbar {
-        padding-right: 25px;
-        padding-left: 25px;
     }
 
     .content-grid {
@@ -1154,13 +1147,13 @@ a:focus-visible {
         padding-left: 3px;
     }
 
-    .page-footer {
-        padding-right: 25px;
-        padding-left: 25px;
-    }
 }
 
 @media (max-width: 760px) {
+    :root {
+        --page-gutter: 16px;
+    }
+
     .sidebar {
         position: static;
         width: 100%;
@@ -1216,7 +1209,6 @@ a:focus-visible {
     .topbar {
         position: static;
         min-height: 55px;
-        padding: 0 18px;
     }
 
     .local-badge {
@@ -1235,7 +1227,8 @@ a:focus-visible {
     }
 
     .dashboard {
-        padding: 27px 16px 15px;
+        padding-top: 27px;
+        padding-bottom: 15px;
     }
 
     .page-heading {
@@ -1321,7 +1314,8 @@ a:focus-visible {
 
     .page-footer {
         flex-direction: column;
-        padding: 15px 16px 23px;
+        padding-top: 15px;
+        padding-bottom: 23px;
     }
 }
 
