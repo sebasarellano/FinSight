@@ -14,10 +14,9 @@
             </p>
         </div>
 
-        <button class="button button-primary" type="button" disabled
-                title="Disponible cuando implementemos los movimientos">
-            <span>+</span> Nuevo movimiento
-        </button>
+        <a class="button button-primary" href="{{ url_for('transactions') }}">
+            <span aria-hidden="true">+</span> Nuevo movimiento
+        </a>
     </div>
 
     <section class="balance-panel" aria-labelledby="balance-title">
