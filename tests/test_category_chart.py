@@ -71,7 +71,7 @@ def test_each_category_has_a_fixed_color(client, add_transaction):
 
     result = get_expense_by_category("2026-10")
 
-    assert result[0]["color"] == "#38bdf8"
+    assert result[0]["color"] == "#6cc3ff"
 
 
 def test_dashboard_shows_chart_and_table(client, add_transaction):

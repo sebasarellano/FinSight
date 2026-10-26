@@ -91,6 +91,7 @@
     --hero-line: rgba(255, 255, 255, 0.16);
     --hero-ring: rgba(255, 255, 255, 0.09);
     --hero-chip: rgba(255, 255, 255, 0.12);
+    --hero-ghost: rgba(255, 255, 255, 0.07);
     --on-hero: #f4f7ff;
     --on-hero-soft: #d0dbff;
     --on-hero-muted: #b9c6f7;
@@ -499,7 +500,7 @@ a:focus-visible {
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    padding: 26px 29px 20px;
+    padding: 34px 38px 24px;
     background:
         radial-gradient(ellipse at 95% 10%, var(--hero-glow), transparent 38%),
         linear-gradient(120deg, var(--hero-from) 0%, var(--hero-mid) 55%, var(--hero-to) 100%);
@@ -551,7 +552,7 @@ a:focus-visible {
 .balance-main h2 {
     margin: 0;
     font-family: var(--font-heading);
-    font-size: clamp(32px, 3.4vw, 44px);
+    font-size: clamp(40px, 5.2vw, 76px);
     font-weight: 700;
     letter-spacing: -0.03em;
     line-height: 1.2;
@@ -560,7 +561,7 @@ a:focus-visible {
 
 .decimal {
     color: var(--on-hero-soft);
-    font-size: 0.62em;
+    font-size: 0.5em;
     letter-spacing: -0.02em;
 }
 
@@ -676,7 +677,7 @@ a:focus-visible {
     overflow-wrap: anywhere;
     margin: 17px 0 9px;
     font-family: var(--font-heading);
-    font-size: clamp(18px, 1.8vw, 25px);
+    font-size: clamp(22px, 2.2vw, 30px);
     font-weight: 700;
     letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
@@ -1815,4 +1816,107 @@ a:focus-visible {
 /* El contenido recibe el foco al saltar, pero no necesita un contorno. */
 .main-content:focus {
     outline: none;
+}
+
+/* ==========================================================
+   Resumen: acento editorial, texto fantasma y movimiento
+   ========================================================== */
+
+/* Una palabra del titular en cursiva serif, como en las portadas editoriales. */
+.serif-accent {
+    padding-right: 0.04em;
+    font-family: var(--font-accent);
+    font-size: 1.12em;
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: 0;
+}
+
+/* Palabra gigante y casi transparente detrás del patrimonio. */
+.balance-ghost {
+    position: absolute;
+    right: -0.02em;
+    bottom: -0.16em;
+    z-index: 0;
+    color: var(--hero-ghost);
+    font-family: var(--font-heading);
+    font-size: clamp(84px, 13vw, 210px);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Segundo resplandor que se desplaza muy despacio por el panel. */
+.balance-panel::after {
+    content: "";
+    position: absolute;
+    bottom: -75%;
+    left: -12%;
+    z-index: -1;
+    width: 55%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--hero-glow), transparent 68%);
+    pointer-events: none;
+    animation: drift 18s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(40%, -14%) scale(1.15); }
+}
+
+/* Entrada escalonada de los bloques. "backwards" aplica el estado inicial
+   solo antes de empezar; al terminar, los estilos normales (como el
+   levantamiento al pasar el cursor) vuelven a mandar. */
+@keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+}
+
+.dashboard-home .page-heading,
+.dashboard-home .balance-panel,
+.dashboard-home .metric-card,
+.dashboard-home .content-grid > .panel,
+.dashboard-home .category-panel,
+.dashboard-home .transactions-panel {
+    animation: rise 560ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+
+.dashboard-home .balance-panel { animation-delay: 80ms; }
+.dashboard-home .metric-card:nth-child(1) { animation-delay: 160ms; }
+.dashboard-home .metric-card:nth-child(2) { animation-delay: 230ms; }
+.dashboard-home .metric-card:nth-child(3) { animation-delay: 300ms; }
+.dashboard-home .content-grid > .panel:nth-child(1) { animation-delay: 380ms; }
+.dashboard-home .content-grid > .panel:nth-child(2) { animation-delay: 440ms; }
+.dashboard-home .category-panel { animation-delay: 500ms; }
+.dashboard-home .transactions-panel { animation-delay: 560ms; }
+
+/* Las barras del gráfico crecen desde la base, una tras otra. */
+@keyframes grow {
+    from { transform: scaleY(0); }
+    to   { transform: scaleY(1); }
+}
+
+.dashboard-home .bar {
+    transform-origin: bottom;
+    animation: grow 700ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+    animation-delay: calc(var(--i, 0) * 70ms + 450ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dashboard-home .page-heading,
+    .dashboard-home .balance-panel,
+    .dashboard-home .metric-card,
+    .dashboard-home .content-grid > .panel,
+    .dashboard-home .category-panel,
+    .dashboard-home .transactions-panel,
+    .dashboard-home .bar,
+    .balance-panel::after {
+        animation: none;
+    }
 }
