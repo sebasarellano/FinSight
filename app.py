@@ -130,6 +130,12 @@ def format_money(value):
     text = text.replace(",", "X").replace(".", ",").replace("X", ".")
     return sign + text
 
+@app.template_filter("currency")
+def format_currency(value):
+    """Muestra la moneda con el signo antes del símbolo: -$ 230,00."""
+    value = round(float(value or 0), 2)
+    sign = "-" if value < 0 else ""
+    return f"{sign}$ {format_money(abs(value))}"
 
 @app.template_filter("percent")
 def format_percent(value):
