@@ -79,6 +79,7 @@
 
     /* Botón principal: blanco azulado */
     --button-bg: #e8eefb;
+    --button-bg-hover: #ffffff;
     --on-button: #0a1020;
 
     /* Panel principal: bloque cobalto a sangre */
@@ -459,17 +460,29 @@ a:focus-visible {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    min-height: 40px;
-    padding: 0 15px;
+    min-height: 42px;
+    padding: 0 20px;
     border: 1px solid transparent;
-    border-radius: var(--radius-sm);
-    font-size: 12px;
+    border-radius: var(--radius-pill);
+    font-size: 13px;
     font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: background 160ms ease, border-color 160ms ease,
+                transform 160ms ease;
+}
+
+.button:active:not(:disabled) {
+    transform: translateY(1px);
 }
 
 .button-primary {
     color: var(--on-button);
     background: var(--button-bg);
+}
+
+.button-primary:hover:not(:disabled) {
+    background: var(--button-bg-hover);
 }
 
 .button-primary:disabled {
@@ -617,12 +630,14 @@ a:focus-visible {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    transition: border-color 160ms ease, background 160ms ease;
+    transition: border-color 160ms ease, background 160ms ease,
+                transform 160ms ease;
 }
 
 .metric-card:hover {
     background: var(--surface-raised);
     border-color: var(--border-strong);
+    transform: translateY(-2px);
 }
 
 .metric-top {
@@ -731,10 +746,13 @@ a:focus-visible {
     flex-shrink: 0;
     padding: 7px 9px;
     color: var(--text-secondary);
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
     font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
 .account-count {
@@ -1020,6 +1038,14 @@ a:focus-visible {
     font-size: 11px;
 }
 
+.transactions-table tbody tr {
+    transition: background 160ms ease;
+}
+
+.transactions-table tbody tr:hover {
+    background: var(--surface-raised);
+}
+
 .transactions-table tbody tr:last-child td {
     border-bottom: 0;
 }
@@ -1071,10 +1097,13 @@ a:focus-visible {
     display: inline-block;
     padding: 5px 8px;
     color: var(--text-secondary);
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    border-radius: 6px;
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
     font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
 }
 
 .date-cell,
@@ -1388,6 +1417,11 @@ a:focus-visible {
     box-shadow: 0 0 0 3px var(--accent-line);
 }
 
+.form-field input:hover:not(:focus),
+.form-field select:hover:not(:focus) {
+    border-color: var(--border-strong);
+}
+
 .form-field select {
     cursor: pointer;
 }
@@ -1513,7 +1547,8 @@ a:focus-visible {
 }
 
 .button-small {
-    padding: 0.4rem 0.8rem;
+    min-height: 34px;
+    padding: 0 14px;
     font-size: 0.8125rem;
 }
 
