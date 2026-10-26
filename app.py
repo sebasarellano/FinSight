@@ -106,16 +106,16 @@ BUDGET_WARNING_PERCENT = 80
 # Color de cada categoría de gasto en el gráfico del dashboard. Es fijo
 # por categoría para que "Alimentación" tenga siempre el mismo color.
 CATEGORY_COLORS = {
-    "Alimentación": "#34d399",
-    "Transporte": "#38bdf8",
-    "Vivienda": "#818cf8",
-    "Servicios": "#fbbf24",
-    "Salud": "#fb7185",
-    "Educación": "#a78bfa",
-    "Entretenimiento": "#fb923c",
-    "Otros": "#94a3b8",
+    "Alimentación": "#f0c05a",
+    "Transporte": "#6cc3ff",
+    "Vivienda": "#5f7cff",
+    "Servicios": "#3fd6c6",
+    "Salud": "#ff8fa3",
+    "Educación": "#cba3ff",
+    "Entretenimiento": "#ff9f6b",
+    "Otros": "#8190a5",
 }
-DEFAULT_CATEGORY_COLOR = "#94a3b8"
+DEFAULT_CATEGORY_COLOR = "#8190a5"
 
 # ---------------------------------------------------------------
 # Filtros de plantilla: cambian solo cómo se muestra un valor.
