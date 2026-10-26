@@ -60,7 +60,7 @@
                 <span class="metric-label">Ingresos del mes</span>
                 <span class="metric-icon income-icon">↓</span>
             </div>
-            <p class="metric-value">$ {{ month_income|money }}</p>
+            <p class="metric-value">{{ month_income|currency }}</p>
             <p class="metric-footnote">
                 <span class="metric-accent">Ingresos</span>
                 <span>· Este mes</span>
@@ -72,7 +72,7 @@
                 <span class="metric-label">Gastos del mes</span>
                 <span class="metric-icon expense-icon">↑</span>
             </div>
-            <p class="metric-value">$ {{ month_expense|money }}</p>
+            <p class="metric-value">{{ month_expense|currency }}</p>
             <p class="metric-footnote">
                 <span class="metric-neutral">Egresos</span>
                 <span>· Este mes</span>
@@ -84,10 +84,12 @@
                 <span class="metric-label">Ahorro neto</span>
                 <span class="metric-icon savings-icon">↗</span>
             </div>
-            <p class="metric-value">$ {{ month_net|money }}</p>
+            <p class="metric-value">{{ month_net|currency }}</p>
             <p class="metric-footnote">
                 {% if savings_rate is not none %}
-                <span class="metric-accent">{{ savings_rate|percent }}</span>
+                <span class="metric-accent {% if savings_rate < 0 %}metric-negative{% endif %}">
+                    {{ savings_rate|percent }}
+                </span>
                 <span>de los ingresos</span>
                 {% else %}
                 <span class="metric-neutral">Sin ingresos</span>
@@ -325,11 +327,11 @@
                         <td class="date-cell">{{ item.transaction_date|short_date }}</td>
                         <td class="account-cell">{{ item.account_name }}</td>
                         {% if item.transaction_type == 'income' %}
-                        <td class="amount-column amount-positive">+$ {{ item.amount|money }}</td>
+                        <td class="amount-column amount-positive">+{{ item.amount|currency }}</td>
                         {% elif item.transaction_type == 'expense' %}
-                        <td class="amount-column amount-negative">−$ {{ item.amount|money }}</td>
+                        <td class="amount-column amount-negative">−{{ item.amount|currency }}</td>
                         {% else %}
-                        <td class="amount-column">$ {{ item.amount|money }}</td>
+                        <td class="amount-column">{{ item.amount|currency }}</td>
                         {% endif %}
                     </tr>
                     {% endfor %}

@@ -703,6 +703,10 @@ a:focus-visible {
     color: var(--income);
 }
 
+.metric-accent.metric-negative {
+    color: var(--expense);
+}
+
 .metric-neutral {
     color: var(--text-secondary);
 }
