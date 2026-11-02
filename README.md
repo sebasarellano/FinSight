@@ -6,6 +6,12 @@ El proyecto tiene dos objetivos: construir una herramienta práctica y visualmen
 
 > **Aviso:** FinSight es un proyecto personal de aprendizaje. Utiliza datos ficticios para demostración. No introduzcas información bancaria ni datos financieros sensibles reales.
 
+## Demostración
+
+[![Ver demostración de FinSight en YouTube](docs/screenshots/screenshot2.png)](https://youtu.be/PgiHtix4vDY)
+
+*Haz clic en la imagen para ver un recorrido por la aplicación.*
+
 ## Funcionalidades
 
 ### Resumen financiero
