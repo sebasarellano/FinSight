@@ -17,6 +17,8 @@ El proyecto tiene dos objetivos: construir una herramienta práctica y visualmen
 - Consultar los cinco movimientos más recientes.
 - Identificar visualmente los valores positivos y negativos.
 
+Los gráficos se dibujan con Chart.js, que está incluido en el repositorio. No se necesita conexión a internet para verlos.
+
 ### Movimientos
 
 - Registrar ingresos y gastos con descripción, importe, categoría, fecha y cuenta.
@@ -78,6 +80,7 @@ Las transferencias entre cuentas no se consideran ingresos ni gastos para los c�
 - **Flask:** framework web.
 - **SQLite:** base de datos relacional local.
 - **HTML y CSS:** estructura y diseño de la interfaz.
+- **JavaScript y Chart.js:** gráficos interactivos del dashboard.
 - **Jinja2:** generación de páginas HTML mediante plantillas.
 - **pytest:** pruebas automatizadas.
 - **Git y GitHub:** control de versiones y colaboración.
@@ -119,6 +122,8 @@ Como alternativa, puedes utilizar el Símbolo del sistema (CMD):
 .venv\Scripts\activate.bat
 ```
 
+También puedes omitir la activación y llamar directamente al Python del entorno virtual en los pasos siguientes, por ejemplo `.\.venv\Scripts\python.exe app.py`.
+
 Cuando el entorno esté activo, aparecerá `(.venv)` al inicio de la línea de la terminal.
 
 ### 3. Instalar las dependencias
@@ -151,7 +156,13 @@ Para ejecutar las pruebas con el entorno virtual activado:
 python -m pytest -v
 ```
 
-Las pruebas cubren funcionalidades como el registro y la validación de movimientos, los cálculos de saldos y la gestión de presupuestos.
+Las pruebas cubren, entre otras funcionalidades:
+
+- El registro, la edición y la validación de movimientos y formularios.
+- Los cálculos de saldos y del dashboard, incluido el gráfico de gastos por categoría.
+- Los filtros, la búsqueda y la exportación a CSV.
+- La gestión de presupuestos.
+- La navegación entre las páginas.
 
 Se utiliza una base de datos temporal para las pruebas, de modo que no se modifiquen los datos locales de la aplicación.
 
@@ -168,13 +179,14 @@ FinSight/
 ├── README.md
 ├── LICENSE
 ├── .gitignore
+├── .gitattributes
 ├── .github/
 │   └── workflows/
 │       └── tests.yml
 ├── docs/
 │   └── screenshots/
 │       ├── screenshot1.png
-│       ├── screentshot2.png
+│       ├── screenshot2.png
 │       ├── screenshot3.png
 │       ├── screenshot4.png
 │       └── screenshot5.png
@@ -187,13 +199,26 @@ FinSight/
 │   ├── edit_account.html
 │   └── budgets.html
 ├── static/
-│   └── css/
-│       └── styles.css
+│   ├── css/
+│   │   └── styles.css
+│   └── vendor/
+│       ├── chartjs/
+│       └── fonts/
 └── tests/
     ├── conftest.py
-    ├── test_transactions.py
-    └── test_budgets.py
+    ├── test_budgets.py
+    ├── test_category_chart.py
+    ├── test_dashboard.py
+    ├── test_export.py
+    ├── test_filters.py
+    ├── test_forms.py
+    ├── test_navigation.py
+    └── test_transactions.py
 ```
+
+- `app.py` contiene las rutas y la lógica de la aplicación Flask.
+- `database.py` gestiona la conexión con SQLite y la creación del esquema.
+- `static/vendor/` contiene las librerías y fuentes de terceros que se sirven de forma local.
 
 La carpeta `instance/` se genera localmente al ejecutar la aplicación y no se incluye en el repositorio.
 
@@ -221,6 +246,10 @@ La aplicación almacena sus datos en el equipo donde se ejecuta.
 
 Añadir un archivo a `.gitignore` no elimina las versiones que ya se hayan enviado a GitHub. Si un dato sensible llega a publicarse, debe tratarse como comprometido y reemplazarse cuando corresponda.
 
+## Versiones
+
+Las versiones publicadas, con sus notas de cambios, están disponibles en la sección [Releases](https://github.com/sebasarellano/FinSight/releases) del repositorio.
+
 ## Objetivo de aprendizaje
 
 FinSight también funciona como un proyecto práctico para aprender a mantener un repositorio profesional mediante:
@@ -230,7 +259,14 @@ FinSight también funciona como un proyecto práctico para aprender a mantener u
 - Seguimiento del trabajo con Issues.
 - Integración de cambios mediante Pull Requests.
 - Pruebas automatizadas con pytest y GitHub Actions.
-- Documentación del proyecto y registro de cambios.
+- Documentación del proyecto y publicación de versiones con Releases.
+
+## Créditos de terceros
+
+FinSight incluye los siguientes recursos de terceros en `static/vendor/`, cada uno con su licencia:
+
+- **Chart.js:** biblioteca de gráficos, distribuida bajo licencia MIT.
+- **Bricolage Grotesque** e **Instrument Serif:** tipografías distribuidas bajo la licencia SIL Open Font License (OFL).
 
 ## Licencia
 
@@ -241,4 +277,3 @@ Este proyecto se distribuye bajo la licencia MIT. Consulta el archivo [LICENSE](
 **Sebastián Arellano**
 
 Proyecto personal de aprendizaje y desarrollo de software.
-
